@@ -56,6 +56,32 @@ delivery-kmp/
     └── workflows/   # GitHub Actions CI
 ```
 
+## Running the current server setup
+
+Prerequisite: JDK 21, with `JAVA_HOME` pointing to its installation directory.
+The Gradle Wrapper downloads Gradle 8.11.1 on its first run; a separate Gradle
+installation is not required. Internet access is needed to fetch dependencies.
+
+From the repository root on Windows (PowerShell):
+
+```powershell
+.\gradlew.bat build
+.\gradlew.bat :shared:jvmTest
+.\gradlew.bat :api:run
+```
+
+On Linux or macOS:
+
+```sh
+./gradlew build
+./gradlew :shared:jvmTest
+./gradlew :api:run
+```
+
+With the server running, `http://localhost:8080/health` should return
+`{"status":"ok"}` (JSON whitespace may differ). The current repository does not
+yet contain test cases; running a test task alone does not demonstrate coverage.
+
 ## 📚 Reference
 
 Professor's reference project: [github.com/fmarquesfilho/musi](https://github.com/fmarquesfilho/musi)
