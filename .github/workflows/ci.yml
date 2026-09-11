@@ -33,6 +33,12 @@ jobs:
       - name: Permissão do wrapper
         run: chmod +x ./gradlew
 
+      - name: Lint (ktlint)
+        run: ./gradlew ktlintCheck --no-daemon
+
+      - name: Análise estática (detekt)
+        run: ./gradlew detekt :shared:detektMetadataMain --no-daemon
+
       - name: Build
         run: ./gradlew build --no-daemon
 

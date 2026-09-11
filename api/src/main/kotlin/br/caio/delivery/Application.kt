@@ -1,15 +1,15 @@
 package br.caio.delivery
 
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 
 fun main() {
     embeddedServer(
-        factory  = Netty,
-        port     = 8080,
-        host     = "0.0.0.0",
-        module   = Application::module
+        factory = Netty,
+        port = 8080,
+        host = "0.0.0.0",
+        module = Application::module,
     ).start(wait = true)
 }
 
