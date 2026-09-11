@@ -1,0 +1,17 @@
+[tools]
+java = "21"
+go = "1.23"
+
+[tasks.build]
+description = "Builda os dois stacks: Kotlin/Gradle (shared, api) e Go (services/catalogo)"
+run = """
+./gradlew build --no-daemon
+cd services/catalogo && go build ./...
+"""
+
+[tasks.test]
+description = "Roda os testes dos dois stacks: Kotlin/Gradle e Go"
+run = """
+./gradlew test --no-daemon
+cd services/catalogo && go test ./...
+"""
