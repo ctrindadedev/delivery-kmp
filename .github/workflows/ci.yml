@@ -30,11 +30,31 @@ jobs:
           key: gradle-${{ hashFiles('**/*.toml', '**/*.kts') }}
           restore-keys: gradle-
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/catalogo/go.mod
+          cache: false # sem go.sum ainda
+
       - name: Permissão do wrapper
         run: chmod +x ./gradlew
+
+      - name: Lint (ktlint)
+        run: ./gradlew ktlintCheck --no-daemon
+
+      - name: Análise estática (detekt)
+        run: ./gradlew detekt :shared:detektMetadataMain --no-daemon
 
       - name: Build
         run: ./gradlew build --no-daemon
 
       - name: Testes do domínio
         run: ./gradlew :shared:jvmTest --no-daemon
+
+      - name: Build do serviço Go (catalogo)
+        working-directory: services/catalogo
+        run: go build ./...
+
+      - name: Testes do serviço Go (catalogo)
+        working-directory: services/catalogo
+        run: go test ./...

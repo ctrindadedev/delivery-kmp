@@ -6,6 +6,8 @@ exposed      = "0.57.0"
 logback      = "1.5.12"
 postgres     = "42.7.4"
 java         = "21"
+ktlint-gradle = "14.2.0"
+detekt       = "1.23.8"
 
 [libraries]
 ktor-server-core          = { module = "io.ktor:ktor-server-core",                version.ref = "ktor" }
@@ -27,3 +29,5 @@ logback                   = { module = "ch.qos.logback:logback-classic",        
 kotlinMultiplatform       = { id = "org.jetbrains.kotlin.multiplatform",          version.ref = "kotlin" }
 kotlinJvm                 = { id = "org.jetbrains.kotlin.jvm",                   version.ref = "kotlin" }
 kotlinSerialization       = { id = "org.jetbrains.kotlin.plugin.serialization",  version.ref = "kotlin" }
+ktlint                    = { id = "org.jlleitschuh.gradle.ktlint",              version.ref = "ktlint-gradle" }
+detekt                    = { id = "io.gitlab.arturbosch.detekt",               version.ref = "detekt" }

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package delivery.catalogo.v1;
+
+option go_package = "github.com/ctrindadedev/delivery-kmp/services/catalogo/proto";
+
+// Rascunho do contrato — ainda não gerado nem implementado.
+service CatalogoService {
+  rpc GetMenu(GetMenuRequest) returns (GetMenuResponse);
+
+  rpc InvalidateCache(InvalidateCacheRequest) returns (InvalidateCacheResponse);
+}
+
+message GetMenuRequest {
+  string restaurant_id = 1;
+}
+
+message GetMenuResponse {
+  string restaurant_id = 1;
+  repeated MenuItemProto items = 2;
+  bool from_cache = 3;
+}
+
+message MenuItemProto {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int64 price_cents = 4;
+  bool available = 5;
+}
+
+message InvalidateCacheRequest {
+  string restaurant_id = 1;
+}
+
+message InvalidateCacheResponse {
+  bool success = 1;
+}
