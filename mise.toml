@@ -8,10 +8,18 @@ run = """
 ./gradlew build --no-daemon
 cd services/catalogo && go build ./...
 """
+run_windows = """
+gradlew.bat build --no-daemon
+cd services\\catalogo && go build ./...
+"""
 
 [tasks.test]
 description = "Roda os testes dos dois stacks: Kotlin/Gradle e Go"
 run = """
 ./gradlew test --no-daemon
 cd services/catalogo && go test ./...
+"""
+run_windows = """
+gradlew.bat test --no-daemon
+cd services\\catalogo && go test ./...
 """

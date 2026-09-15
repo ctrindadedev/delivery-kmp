@@ -9,8 +9,7 @@ Este documento cobre as duas disciplinas que compartilham este monorepo:
 ver [ADR-0001](decisoes/0001-estrutura-monorepo.md)). As seções de Visão e MVP valem
 para as duas disciplinas; a Justificativa Kotlin × Go é específica do Web II.
 
-> **Status:** seção Web II fechada para a Sprint 0. Seção Mobile (plataforma-alvo e
-> backend) ainda em rascunho — fechamento previsto para 11/09.
+> **Status:** seções Web II e Mobile fechadas para a Sprint 0.
 
 ---
 
@@ -77,15 +76,15 @@ negócio, que continuam em Kotlin/Ktor, coerente com o domínio compartilhado em
 
 **Por que Kotlin em vez de Java no backend (ao invés de Quarkus):**
 
-1. **Coerência com o Mobile:** `shared/` é KMP e é importado pela API. Backend em
-   Java quebraria esse compartilhamento — o domínio divergiria em duas linguagens,
-   mantido em sincronia só por testes.
+1. **Coerência com o Mobile:** `shared/` é KMP e é importado diretamente pela API.
+   Um backend Java também poderia consumir o artefato JVM, mas Kotlin evita uma
+   camada de interoperabilidade e mantém os modelos e as regras no mesmo idioma.
 2. **Fundamentos são os mesmos:** coroutines vs. threads, Ktor vs. Quarkus, Exposed
    vs. Hibernate são ferramentas diferentes sobre os mesmos fundamentos (HTTP, TCP,
    ACID). A curva de aprendizado é sobre o "porquê", não sobre sintaxe nova.
 
 O contrato entre os dois serviços é `protos/catalogo.proto` (rascunho na Sprint 0,
-à ser implementado na Sprint 2), com `buf lint`/`buf breaking` garantindo que mudanças no
+a ser implementado na Sprint 2), com `buf lint`/`buf breaking` garantindo que mudanças no
 contrato não quebrem quem já o consome — o equivalente, na fronteira entre
 serviços, do que testes de arquitetura fazem dentro de um módulo só.
 
@@ -93,6 +92,6 @@ serviços, do que testes de arquitetura fazem dentro de um módulo só.
 
 ## Plataforma-alvo e backend (Mobile)
 
-- **Plataforma-alvo:** Android (primário). iOS fica como alvo secundário via KMP,
-  sem reescrita, se houver tempo — a equipe não tem acesso garantido a Mac.
+- **Plataformas-alvo:** Android (primário) e desktop (secundário), com interface
+  compartilhada em Compose Multiplatform. iOS fica fora da Sprint 0.
 - **Backend:** a própria API de Web II

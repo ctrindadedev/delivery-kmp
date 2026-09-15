@@ -2,6 +2,7 @@
 
 **Estado:** Aceita  
 **Data:** 2026-08-26  
+**Revisada em:** 2026-09-15 — cronograma Mobile alinhado aos requisitos da Sprint 0
 **Validada com:** Professor Fernando Marques (orientação presencial + referência ao MUSI)
 
 ---
@@ -31,7 +32,7 @@ Um módulo `shared/` em Kotlin Multiplatform com o domínio em `commonMain`.
 ```
 shared/src/commonMain/  → compila para JVM (api/) e Android (app/)
 api/                    → Kotlin/JVM, importa shared/ como dependência
-app/                    → KMP + Compose, importa shared/ (Sprint 2 do Mobile)
+app/                    → KMP + Compose para Android e desktop, importa shared/
 ```
 
 **Dinheiro:** `@JvmInline value class Dinheiro(val centavos: Long)`  
@@ -40,8 +41,8 @@ app/                    → KMP + Compose, importa shared/ (Sprint 2 do Mobile)
 **IDs:** `kotlin.uuid.Uuid` do stdlib do Kotlin 2.0+  
 — multiplataforma, sem `expect/actual`, sem dependência externa.
 
-**Android target:** desabilitado até o início da Sprint 2 do Mobile.  
-— habilitar agora puxaria o Android SDK para o build sem necessidade.
+**Android target:** habilitado na Sprint 0 para que `shared/` seja reutilizado pela
+primeira tela do aplicativo Android. O desktop reutiliza o alvo JVM existente.
 
 ---
 
@@ -52,7 +53,7 @@ app/                    → KMP + Compose, importa shared/ (Sprint 2 do Mobile)
 | Domínio duplicado (como no MUSI) | No MUSI a duplicação serve à comparação Java × Kotlin. Sem essa fronteira, duplicar é só copia-cola que diverge |
 | `BigDecimal` via `ionspin/bignum` | Dependência extra sem ganho real — dinheiro discreto em centavos é suficiente e mais simples |
 | `java.util.UUID` com `expect/actual` | `kotlin.uuid.Uuid` resolve sem cerimônia desde Kotlin 2.0 |
-| Android target ativo desde o início | Puxaria o Android SDK para o build da Sprint 0, que é exclusivamente servidor |
+| Adiar o Android target até a Sprint 2 | Impediria que a primeira tela Android da Sprint 0 reutilizasse o domínio compartilhado |
 
 ---
 
@@ -60,7 +61,8 @@ app/                    → KMP + Compose, importa shared/ (Sprint 2 do Mobile)
 
 - ✅ Domínio existe uma única vez — regra de negócio muda em um lugar só
 - ✅ `commonMain` puro de stdlib — compilador KMP garante sem teste de arquitetura
-- ✅ Android target pode ser ligado na Sprint 2 sem refatoração do domínio
+- ✅ Android e desktop reutilizam o domínio desde a Sprint 0
+- ⚠️ O build da Sprint 0 passa a exigir o Android SDK
 - ⚠️ Build de KMP é mais complexo que Kotlin/JVM puro — curva de aprendizado no início
 - ⚠️ Erros de configuração KMP podem ter stack traces crípticos
 
