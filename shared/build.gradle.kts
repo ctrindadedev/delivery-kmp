@@ -1,9 +1,11 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidLibrary)
 }
 
 kotlin {
     jvm()
+    androidTarget()
 
     jvmToolchain(
         libs.versions.java
@@ -21,9 +23,16 @@ kotlin {
     }
 }
 
-// O task "detekt" padrão só olha src/main/kotlin, que não existe em KMP.
-// "detektMetadataMain" é o que de fato analisa commonMain — precisa
-// ser plugado manualmente no "check" para não passar batido no CI.
+android {
+    namespace = "br.caio.delivery.shared"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 24
+    }
+}
+
+// O task detekt padrão não cobre commonMain em módulos multiplataforma.
 tasks.named("check") {
     dependsOn("detektMetadataMain")
 }

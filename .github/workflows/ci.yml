@@ -51,6 +51,9 @@ jobs:
       - name: Testes do domínio
         run: ./gradlew :shared:jvmTest --no-daemon
 
+      - name: Aplicativo Android e desktop
+        run: ./gradlew :app:assembleDebug :app:desktopJar --no-daemon
+
       - name: Build do serviço Go (catalogo)
         working-directory: services/catalogo
         run: go build ./...

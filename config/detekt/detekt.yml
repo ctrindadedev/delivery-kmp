@@ -1,0 +1,13 @@
+naming:
+  FunctionNaming:
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+
+formatting:
+  Indentation:
+    active: false
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+  UnusedPrivateMember:
+    allowedNames: '.*Preview'
