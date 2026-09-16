@@ -19,3 +19,4 @@ rootProject.name = "delivery-kmp"
 
 include("shared")
 include("api")
+include("app")
