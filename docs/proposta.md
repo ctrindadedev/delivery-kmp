@@ -1,97 +1,148 @@
-# Proposta — Delivery Platform (KMP)
+# Proposta do Delivery KMP
 
-Este documento cobre as duas disciplinas que compartilham este monorepo:
+Este documento apresenta o produto desenvolvido em conjunto nas disciplinas
+DIM0547, Desenvolvimento de Sistemas Web II, e DIM0524, Sistemas para
+Dispositivos Móveis.
 
-- **DIM0547 — Desenvolvimento de Sistemas Web II**
-- **DIM0524 — Sistemas para Dispositivos Móveis** 
+## 1. Visão do produto
 
-É o mesmo produto, com o domínio compartilhado via `shared/` (Kotlin Multiplatform,
-ver [ADR-0001](decisoes/0001-estrutura-monorepo.md)). As seções de Visão e MVP valem
-para as duas disciplinas; a Justificativa Kotlin × Go é específica do Web II.
-
-> **Status:** seções Web II e Mobile fechadas para a Sprint 0.
-
----
-
-## Visão do produto
-
-| | |
+| Campo | Definição |
 |---|---|
-| Para | usuários que querem pedir comida online |
-| Que | não têm como descobrir restaurantes e cardápios próximos facilmente |
-| O **DeliveryApp** | é uma plataforma de delivery de comida |
-| Que | conecta clientes a restaurantes com catálogo em tempo real |
-| Diferente de | sistemas manuais ou apps sem filtragem por proximidade |
-| Nosso produto | serve o cardápio em cache com baixa latência via Go + gRPC |
+| Para | Pessoas que pedem comida pela internet e querem consultar opções antes de escolher |
+| Que | Precisam encontrar restaurantes e cardápios atualizados com rapidez |
+| O Delivery KMP | É uma plataforma de consulta de restaurantes e cardápios |
+| Que | Reúne a descoberta de restaurantes, a busca por nome e os itens disponíveis em cada cardápio |
+| Diferente de | Catálogos manuais, desatualizados ou separados do sistema do restaurante |
+| Nosso produto | Compartilha o domínio entre aplicativo e servidor e prepara o catálogo para consultas com baixa latência |
 
----
+O produto será construído gradualmente nas duas disciplinas. Web II concentra o
+backend, os contratos e a infraestrutura. Sistemas para Dispositivos Móveis
+concentra a experiência do usuário em Android e desktop. As duas partes usam o
+mesmo domínio em Kotlin Multiplatform.
 
-## MVP
+## 2. MVP e hipótese de valor
 
-| No MVP | Fora do MVP |
+| Dentro do MVP | Fora do MVP inicial |
 |---|---|
-| Cadastro e consulta de restaurantes | Rastreamento em tempo real |
-| Cardápio com preços e disponibilidade | Pagamento integrado |
-| Cache de catálogo em Go via gRPC | Avaliações e reviews |
-| Busca por restaurante | Módulo de entrega |
+| Cadastro e consulta de restaurantes | Pagamento integrado |
+| Busca de restaurantes por nome | Rastreamento de entrega em tempo real |
+| Cadastro e consulta de itens do cardápio | Avaliações e comentários |
+| Preço e disponibilidade dos itens | Módulo de entregadores |
+| Aplicativo Android e desktop | Aplicativo para iOS |
+| Integração do aplicativo com a API do grupo | Programa de fidelidade e promoções |
 
----
+**Hipótese de valor:** acreditamos que pessoas que pedem comida pela internet
+usarão o aplicativo para descobrir restaurantes e consultar cardápios porque
+terão acesso rápido e atualizado às opções e aos preços disponíveis.
 
-## Backlog (por sprint)
+O MVP valida a proposta quando o usuário consegue encontrar um restaurante,
+consultar seu cardápio e identificar os itens disponíveis. A integração real
+entre aplicativo e API será feita nas próximas sprints. Na Sprint 0, a tela usa
+dados locais para permitir a validação da interface sem depender do backend.
 
-| Sprint | Web II | Mobile |
+## 3. Backlog inicial
+
+O backlog está no
+[GitHub Projects](https://github.com/users/IuryFredson/projects/2). Ele contém
+histórias de usuário, critérios de aceitação, prioridade, estimativa e sprint
+prevista.
+
+As histórias P1 concentram a descoberta de restaurantes e o gerenciamento do
+cardápio. O consumo da API pelo aplicativo está previsto para a Sprint 2, depois
+da implementação dos endpoints necessários em Web II.
+
+## 4. Entidades principais e relações
+
+| Entidade ou objeto de valor | Responsabilidade |
+|---|---|
+| `Restaurant` | Representa o restaurante e mantém seu cardápio |
+| `MenuItem` | Representa um item com nome, descrição, preço e disponibilidade |
+| `Dinheiro` | Armazena valores monetários em centavos, sem ponto flutuante |
+| `RestaurantId` | Identifica um restaurante de forma única |
+| `MenuItemId` | Identifica um item do cardápio de forma única |
+
+Um `Restaurant` possui nenhum ou vários `MenuItem`. Cada item pertence ao
+cardápio de um restaurante e possui um preço representado por `Dinheiro`. O
+restaurante funciona como raiz desse conjunto e concentra as regras de inclusão,
+remoção e alteração da disponibilidade dos itens.
+
+O domínio fica em `shared/src/commonMain`, sem dependência de Compose, Ktor,
+banco de dados ou outra tecnologia de infraestrutura. Assim, a API e o
+aplicativo usam as mesmas entidades e regras.
+
+## 5. Decisões de plataforma e backend
+
+### Aplicativo
+
+O Android é a plataforma principal porque o produto será usado em mobilidade,
+com interação por toque e acesso rápido durante a escolha de uma refeição. O
+desktop é a plataforma secundária e permite validar o compartilhamento da
+interface, além de oferecer uma forma rápida de executar e demonstrar o produto.
+
+A interface usa Compose Multiplatform e permanece em `commonMain`. Android e
+desktop mantêm apenas seus pontos de entrada. O layout limita a largura do
+conteúdo em telas maiores para preservar a leitura no desktop, enquanto ocupa a
+largura disponível no celular.
+
+O iOS foi considerado, mas ficou fora do MVP porque exigiria ambiente e hardware
+específicos para compilação e validação. Ele pode ser incluído futuramente sem
+alterar o domínio compartilhado.
+
+### Backend
+
+O aplicativo consumirá a API criada pelo próprio grupo em Web II. Essa escolha
+permite controlar as regras de restaurante e cardápio, a atualização dos dados e
+a estratégia de cache. Na Sprint 0, dados locais substituem temporariamente a
+API para que a interface possa ser desenvolvida e executada de forma
+independente.
+
+Uma API externa e um Backend as a Service foram considerados, mas descartados
+porque reduziriam o controle sobre as regras do domínio e não permitiriam
+praticar a arquitetura poliglota, o contrato gRPC e a estratégia de cache
+previstos em Web II.
+
+Para o serviço principal, o grupo escolheu Kotlin com Ktor. Kotlin permite que a
+API consuma diretamente o domínio compartilhado no alvo JVM e mantém as regras
+na mesma linguagem usada pelo aplicativo. Java com Quarkus também permitiria
+consumir o artefato JVM, mas adicionaria uma fronteira de interoperabilidade sem
+benefício para este produto.
+
+## 6. Divisão entre o serviço principal e Go
+
+| Kotlin com Ktor | Go com gRPC |
+|---|---|
+| Casos de uso e regras do domínio | Cache dos cardápios consultados com frequência |
+| Cadastro e atualização de restaurantes | Atendimento de `GetMenu` com baixa latência |
+| Cadastro e atualização de itens | Invalidação do cache quando o cardápio mudar |
+| Persistência e transações | Métricas de acerto e erro do cache nas próximas sprints |
+
+A consulta de cardápio tende a receber mais leituras do que alterações. Por isso,
+o serviço principal continua responsável pelas regras e transações, enquanto o
+serviço Go fica responsável pelo trabalho concorrente e intensivo em leitura.
+Essa divisão evita transformar Go em um segundo backend completo e mantém cada
+serviço com uma responsabilidade clara.
+
+Os serviços se comunicarão por gRPC usando o contrato em
+`protos/catalogo.proto`. Na Sprint 0, o contrato e os esqueletos estão presentes.
+A geração dos stubs e a integração completa entram nas próximas sprints.
+
+## 7. Equipe
+
+| Integrante | Matrícula | Papel |
 |---|---|---|
-| Sprint 0 | Monorepo, `docs/proposta.md`, CI verde (Kotlin + Go), `mise run build`/`test` | Proposta, ambiente KMP, primeira tela Compose |
-| Sprint 1 | CRUD de `Restaurant` em Ktor, OpenAPI documentado | Navegação entre telas, tema Material 3 |
-| Sprint 2 | Microsserviço `catalogo` em Go + gRPC, contrato `.proto` verificado (`buf`) | Estado gerenciado (ViewModel), consumindo a API real |
-| Sprint 3 | PostgreSQL no Neon, cache HTTP (ETag/304), deploy no Render | Cache offline, câmera, GPS, publicação na Play Store |
+| Iury Fredson Germano Miranda | 20240050336 | Desenvolvedor Full Stack |
+| Caio de Medeiros Trindade | A confirmar | Desenvolvedor Full Stack |
 
----
+Os dois integrantes participam do aplicativo e do backend. Iury também atua na
+organização do backlog e na integração do aplicativo. Caio também atua na
+estrutura do backend, no serviço Go e na infraestrutura do projeto.
 
-## Justificativa Kotlin × Go
+## 8. Coorte e integração entre disciplinas
 
-*Ver também [ADR-0001](decisoes/0001-estrutura-monorepo.md)*
+A equipe escolheu a **Coorte B**, com apresentações online pelo Google Meet.
 
-O sistema é dividido em dois serviços, cada um na linguagem que melhor serve o
-**perfil de carga** do trabalho que executa — não por preferência pessoal:
-
-| Vai para o serviço Kotlin (Ktor) | Vai para o microsserviço Go |
-|---|---|
-| Entidades de domínio e regras de negócio | Cache do catálogo de cardápios (leitura massiva) |
-| Persistência e migrações (Exposed + PostgreSQL) | Servir `GetMenu` com baixa latência via gRPC |
-| Orquestração dos casos de uso | Invalidação de cache quando o cardápio muda |
-
-**Por que essa divisão especificamente:**
-
-O endpoint `GET /restaurants/{id}/menu` é **read-heavy**: todo usuário que abre o
-app consulta o cardápio, mas o restaurante raramente o atualiza. Esse desequilíbrio
-entre leitura e escrita justifica isolar essa rota num serviço dedicado a servir
-dados em cache, com baixa latência — sem competir por recursos com o serviço que
-processa transações (criação de restaurante, cadastro de item, etc.).
-
-Go resolve isso com goroutines e overhead de memória baixo, adequado para um
-serviço de cache que só precisa responder rápido — não para orquestrar regras de
-negócio, que continuam em Kotlin/Ktor, coerente com o domínio compartilhado em
-`shared/` (importado também pelo Mobile).
-
-**Por que Kotlin em vez de Java no backend (ao invés de Quarkus):**
-
-1. **Coerência com o Mobile:** `shared/` é KMP e é importado diretamente pela API.
-   Um backend Java também poderia consumir o artefato JVM, mas Kotlin evita uma
-   camada de interoperabilidade e mantém os modelos e as regras no mesmo idioma.
-2. **Fundamentos são os mesmos:** coroutines vs. threads, Ktor vs. Quarkus, Exposed
-   vs. Hibernate são ferramentas diferentes sobre os mesmos fundamentos (HTTP, TCP,
-   ACID). A curva de aprendizado é sobre o "porquê", não sobre sintaxe nova.
-
-O contrato entre os dois serviços é `protos/catalogo.proto` (rascunho na Sprint 0,
-a ser implementado na Sprint 2), com `buf lint`/`buf breaking` garantindo que mudanças no
-contrato não quebrem quem já o consome — o equivalente, na fronteira entre
-serviços, do que testes de arquitetura fazem dentro de um módulo só.
-
----
-
-## Plataforma-alvo e backend (Mobile)
-
-- **Plataformas-alvo:** Android (primário) e desktop (secundário), com interface
-  compartilhada em Compose Multiplatform. iOS fica fora da Sprint 0.
-- **Backend:** a própria API de Web II
+O mesmo produto e o mesmo monorepo serão usados nas duas disciplinas. O
+aplicativo de Sistemas para Dispositivos Móveis consumirá a API construída em Web
+II. O módulo `shared/` mantém as entidades e as regras comuns, enquanto `app/`,
+`api/` e `services/catalogo/` preservam as responsabilidades específicas de cada
+parte.

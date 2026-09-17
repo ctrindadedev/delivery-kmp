@@ -1,87 +1,174 @@
-> WORK IN PROGRESS
+# Delivery KMP
 
-# Delivery Platform — KMP
+Plataforma de delivery desenvolvida em conjunto nas disciplinas DIM0547,
+Desenvolvimento de Sistemas Web II, e DIM0524, Sistemas para Dispositivos Móveis,
+da UFRN.
 
-A full-stack delivery platform built as an academic project for **DIM0547 — Web II** and **DIM0524 — Mobile** (UFRN/DIMAp, 2026.2). The same domain model — written once in Kotlin Multiplatform — powers both the server and the mobile app, with no duplication.
+O projeto reúne uma API em Kotlin com Ktor, um serviço de catálogo em Go e um
+aplicativo Compose Multiplatform para Android e desktop. O domínio de restaurantes
+e cardápios fica em um módulo Kotlin Multiplatform compartilhado entre a API e o
+aplicativo.
 
-## 💻 Tech Stack
+## Equipe
 
-<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 20px;">
-  <img align="center" alt="Kotlin" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg"/>
-  <img align="center" alt="Ktor" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ktor/ktor-original.svg"/>
-  <img align="center" alt="PostgreSQL" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg"/>
-  <img align="center" alt="Android" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg"/>
-  <img align="center" alt="Docker" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg"/>
-  <img align="center" alt="Gradle" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/gradle/gradle-original.svg"/>
-  <img align="center" alt="Go" height="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original.svg"/>
-</div>
+| Integrante | Matrícula | Papel |
+|---|---|---|
+| Iury Fredson Germano Miranda | 20240050336 | Desenvolvedor Full Stack |
+| Caio de Medeiros Trindade | A confirmar | Desenvolvedor Full Stack |
 
-## 📖 About the Repository
+**Coorte de apresentação:** Coorte B, com apresentações online pelo Google Meet.
 
-This repository contains the source code for both the server (`api/`) and the mobile app (`app/`), built on top of a shared domain module (`shared/`).
+## Planejamento
 
-The system was designed to solve the core problems of a delivery platform: restaurant discovery, menu browsing and order placement.
+O backlog está disponível no
+[GitHub Projects](https://github.com/users/IuryFredson/projects/2). Cada item
+contém história de usuário, critérios de aceitação, prioridade, estimativa e
+sprint prevista.
 
-## Key Features
+A proposta completa, as decisões técnicas e o escopo do MVP estão em
+[`docs/proposta.md`](docs/proposta.md).
 
-### 🏗️ Architecture
-- **Kotlin Multiplatform domain:** Business rules defined once in `shared/commonMain` — compiled to JVM for the server and Android for the app. The compiler enforces the boundary.
-- **Layered architecture:** Domain → Application → Infrastructure, with dependency inversion throughout.
-- **Architecture Decision Records (ADRs):** Every significant decision is documented in `docs/decisoes/` with context, alternatives considered, and consequences.
+## Estado da Sprint 0
 
-### 🍽️ Restaurant & Menu (Sprint 1)
-- Restaurant registration with address and operating hours.
-- Menu management with availability control.
-- Business rule enforcement: a restaurant must always have at least one item; prices must be positive.
+Nesta etapa, o repositório contém:
 
-### 📱 Mobile App (Sprint 2)
-- Kotlin Multiplatform + Compose Multiplatform.
-- Shared domain imported directly — no duplication.
-- Offline cache with stale data indicator.
+- domínio compartilhado de restaurantes, itens de cardápio, identificadores e
+  valores monetários;
+- esqueleto da API Ktor com endpoint de verificação em `/health`;
+- esqueleto do serviço Go e contrato inicial em Protocol Buffers;
+- aplicativo Android e desktop com lista de restaurantes, busca e estado vazio;
+- dados locais de exemplo, sem consumo da API nesta sprint;
+- verificações de estilo e análise estática com ktlint e detekt;
+- pipeline de integração contínua para Kotlin, Android, desktop e Go.
 
----
+## Tecnologias
 
-## 📁 Repository structure
+- Kotlin 2.0.21
+- Kotlin Multiplatform
+- Ktor 3.0.3
+- Compose Multiplatform 1.7.3
+- Android Gradle Plugin 8.7.3
+- Java 21
+- Go 1.23
+- gRPC e Protocol Buffers
+- PostgreSQL e Exposed, previstos para as próximas sprints
 
-```
+## Estrutura do repositório
+
+```text
 delivery-kmp/
-├── shared/          # Kotlin Multiplatform — pure domain, zero framework
-│   └── commonMain/  # Restaurant, MenuItem, Dinheiro, IDs
-├── api/             # Ktor server (Kotlin/JVM) — imports shared/
-├── services/
-│   └── catalogo/    # Go gRPC service — menu cache (read-heavy)
-├── docs/
-│   └── decisoes/    # ADRs — why each decision was made
-└── .github/
-    └── workflows/   # GitHub Actions CI
+├── app/                 Aplicativo Compose para Android e desktop
+├── api/                 Serviço HTTP em Kotlin com Ktor
+├── shared/              Entidades e regras em Kotlin Multiplatform
+├── services/catalogo/   Serviço de catálogo em Go
+├── protos/              Contratos Protocol Buffers
+├── docs/                Proposta e decisões de arquitetura
+├── config/              Configuração das verificações de qualidade
+├── .github/workflows/   Pipeline de integração contínua
+├── docker-compose.yml   PostgreSQL para desenvolvimento local
+├── mise.toml            Versões das ferramentas e tarefas locais
+└── settings.gradle.kts  Módulos do projeto Gradle
 ```
 
-## Running the current server setup
+## Pré-requisitos
 
-Prerequisite: JDK 21, with `JAVA_HOME` pointing to its installation directory.
-The Gradle Wrapper downloads Gradle 8.11.1 on its first run; a separate Gradle
-installation is not required. Internet access is needed to fetch dependencies.
+- JDK 21
+- Git
+- Android Studio com Android SDK 34 para executar o aplicativo Android
+- Go 1.23 para compilar o serviço de catálogo
+- Docker para iniciar o PostgreSQL local
 
-From the repository root on Windows (PowerShell):
+No Windows, o Java 21 incluído no Android Studio pode ser ativado no PowerShell:
 
 ```powershell
-.\gradlew.bat build
-.\gradlew.bat :shared:jvmTest
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+java --version
+```
+
+## Executar o aplicativo no desktop
+
+Na raiz do repositório:
+
+```powershell
+.\gradlew.bat :app:run
+```
+
+No Linux ou macOS:
+
+```sh
+./gradlew :app:run
+```
+
+## Executar o aplicativo no Android
+
+1. Abra a raiz do repositório no Android Studio.
+2. Aguarde a sincronização do Gradle.
+3. Inicie um emulador com API 24 ou superior.
+4. Selecione a configuração do módulo `app`.
+5. Execute o aplicativo.
+
+Com um emulador ou dispositivo conectado, também é possível instalar o build de
+depuração pelo PowerShell:
+
+```powershell
+.\gradlew.bat :app:installDebug
+```
+
+## Executar a API
+
+```powershell
 .\gradlew.bat :api:run
 ```
 
-On Linux or macOS:
+Com a API ativa, acesse `http://localhost:8080/health`. A resposta esperada é:
 
-```sh
-./gradlew build
-./gradlew :shared:jvmTest
-./gradlew :api:run
+```json
+{"status":"ok"}
 ```
 
-With the server running, `http://localhost:8080/health` should return
-`{"status":"ok"}` (JSON whitespace may differ). The current repository does not
-yet contain test cases; running a test task alone does not demonstrate coverage.
+## Iniciar o PostgreSQL
 
-## 📚 Reference
+```powershell
+docker compose up -d postgres
+```
 
-Professor's reference project: [github.com/fmarquesfilho/musi](https://github.com/fmarquesfilho/musi)
+O banco local usa, por padrão, o nome, o usuário e a senha `delivery`, na porta
+`5432`. Esses valores podem ser alterados pelas variáveis `POSTGRES_DB`,
+`POSTGRES_USER`, `POSTGRES_PASSWORD` e `POSTGRES_PORT`.
+
+## Executar o serviço Go
+
+```powershell
+cd services\catalogo
+go run .\cmd\server
+```
+
+Na Sprint 0, esse comando inicia apenas o esqueleto do serviço. A implementação
+gRPC será feita nas próximas sprints.
+
+## Build e verificações
+
+No Windows:
+
+```powershell
+.\gradlew.bat build
+.\gradlew.bat :app:assembleDebug :app:desktopJar
+.\gradlew.bat ktlintCheck
+.\gradlew.bat detekt :shared:detektMetadataMain
+cd services\catalogo
+go build ./...
+go test ./...
+```
+
+Com o mise instalado, as tarefas gerais são:
+
+```sh
+mise run build
+mise run test
+```
+
+## Referência
+
+Projeto de referência da disciplina:
+[github.com/fmarquesfilho/musi](https://github.com/fmarquesfilho/musi).
