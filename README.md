@@ -14,7 +14,7 @@ aplicativo.
 | Integrante | Matrícula | Papel |
 |---|---|---|
 | Iury Fredson Germano Miranda | 20240050336 | Desenvolvedor Full Stack |
-| Caio de Medeiros Trindade | A confirmar | Desenvolvedor Full Stack |
+| Caio de Medeiros Trindade | 20230045477 | Desenvolvedor Full Stack |
 
 **Coorte de apresentação:** Coorte B, com apresentações online pelo Google Meet.
 
