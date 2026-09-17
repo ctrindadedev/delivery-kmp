@@ -30,7 +30,7 @@ A proposta completa, as decisões técnicas e o escopo do MVP estão em
 
 ## Vídeo da Sprint 0
 
-O link da apresentação será adicionado aqui após a publicação do vídeo.
+[Link para o vídeo](https://youtu.be/2rv-AbaRumQ)
 
 ## Estado da Sprint 0
 
