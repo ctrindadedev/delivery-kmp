@@ -28,6 +28,10 @@ sprint prevista.
 A proposta completa, as decisões técnicas e o escopo do MVP estão em
 [`docs/proposta.md`](docs/proposta.md).
 
+## Vídeo da Sprint 0
+
+O link da apresentação será adicionado aqui após a publicação do vídeo.
+
 ## Estado da Sprint 0
 
 Nesta etapa, o repositório contém:
@@ -153,7 +157,7 @@ No Windows:
 
 ```powershell
 .\gradlew.bat build
-.\gradlew.bat :app:assembleDebug :app:desktopJar
+.\gradlew.bat :app:assembleDebug :app:packageUberJarForCurrentOS
 .\gradlew.bat ktlintCheck
 .\gradlew.bat detekt :shared:detektMetadataMain
 cd services\catalogo
@@ -167,6 +171,9 @@ Com o mise instalado, as tarefas gerais são:
 mise run build
 mise run test
 ```
+
+O pipeline publica o APK Android e o JAR executável de desktop na seção
+**Artifacts** de cada execução do GitHub Actions.
 
 ## Referência
 

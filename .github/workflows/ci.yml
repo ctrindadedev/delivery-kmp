@@ -51,7 +51,21 @@ jobs:
         run: ./gradlew :shared:jvmTest --no-daemon
 
       - name: Aplicativo Android e desktop
-        run: ./gradlew :app:assembleDebug :app:desktopJar --no-daemon
+        run: ./gradlew :app:assembleDebug :app:packageUberJarForCurrentOS --no-daemon
+
+      - name: Publicar aplicativo Android
+        uses: actions/upload-artifact@v4
+        with:
+          name: delivery-android-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Publicar aplicativo desktop
+        uses: actions/upload-artifact@v4
+        with:
+          name: delivery-desktop-linux
+          path: app/build/compose/jars/*.jar
+          if-no-files-found: error
 
       - name: Build do serviço Go (catalogo)
         working-directory: services/catalogo
