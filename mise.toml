@@ -16,10 +16,10 @@ cd services\\catalogo && go build ./...
 [tasks.test]
 description = "Roda os testes dos dois stacks: Kotlin/Gradle e Go"
 run = """
-./gradlew test --no-daemon
+./gradlew :shared:allTests :api:test :app:desktopTest --no-daemon
 cd services/catalogo && go test ./...
 """
 run_windows = """
-gradlew.bat test --no-daemon
+gradlew.bat :shared:allTests :api:test :app:desktopTest --no-daemon
 cd services\\catalogo && go test ./...
 """
