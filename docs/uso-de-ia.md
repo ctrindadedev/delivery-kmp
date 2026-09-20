@@ -1,6 +1,6 @@
 # Uso de ferramentas de IA
 
-ChatGPT e Codex foram utilizados como apoio à implementação, revisão e
+ChatGPT, Codex e Claude Code foram utilizados como apoio à implementação, revisão e
 melhoria do código, à configuração do processo no GitHub, à organização do
 backlog e das histórias de usuário e à elaboração e revisão da documentação.
 
