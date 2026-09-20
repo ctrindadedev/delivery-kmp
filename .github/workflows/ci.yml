@@ -47,8 +47,17 @@ jobs:
       - name: Build
         run: ./gradlew build --no-daemon
 
+      - name: Bibliotecas gráficas para o Skia (desktopTest)
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libfontconfig1
+
       - name: Testes do domínio
         run: ./gradlew :shared:jvmTest --no-daemon
+
+      - name: Testes de interface (desktop)
+        run: ./gradlew :app:desktopTest --no-daemon
+
+      - name: Testes da API
+        run: ./gradlew :api:test --no-daemon
 
       - name: Aplicativo Android e desktop
         run: ./gradlew :app:assembleDebug :app:packageUberJarForCurrentOS --no-daemon
