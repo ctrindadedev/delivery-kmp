@@ -47,6 +47,9 @@ jobs:
       - name: Análise estática (detekt)
         run: ./gradlew detekt :shared:detektMetadataMain --no-daemon
 
+      - name: Lint do Android
+        run: ./gradlew :app:lintDebug --no-daemon
+
       - name: Build
         run: ./gradlew assemble --no-daemon
 
