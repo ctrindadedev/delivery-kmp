@@ -35,6 +35,9 @@ jobs:
           go-version-file: services/catalogo/go.mod
           cache: false # sem go.sum ainda
 
+      - name: Bibliotecas gráficas para o Skia (desktopTest)
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libfontconfig1
+
       - name: Permissão do wrapper
         run: chmod +x ./gradlew
 
@@ -45,10 +48,7 @@ jobs:
         run: ./gradlew detekt :shared:detektMetadataMain --no-daemon
 
       - name: Build
-        run: ./gradlew build --no-daemon
-
-      - name: Bibliotecas gráficas para o Skia (desktopTest)
-        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libfontconfig1
+        run: ./gradlew assemble --no-daemon
 
       - name: Testes do domínio
         run: ./gradlew :shared:jvmTest --no-daemon
