@@ -1,5 +1,6 @@
 package br.caio.delivery.app
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,13 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import br.caio.delivery.app.theme.DeliveryTheme
 
 @Composable
-fun DeliveryApp() {
+fun DeliveryApp(darkTheme: Boolean = isSystemInDarkTheme()) {
     var query by remember { mutableStateOf("") }
     var selectedRestaurant by remember { mutableStateOf<String?>(null) }
 
-    MaterialTheme {
+    DeliveryTheme(darkTheme = darkTheme) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Box {
                 RestaurantListScreen(
