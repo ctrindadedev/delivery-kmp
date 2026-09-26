@@ -1,5 +1,6 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
+import com.android.build.api.variant.HasUnitTestBuilder
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -38,6 +39,15 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.navigation.compose)
+            implementation(libs.material3.window.size)
+            implementation(libs.material3.adaptive)
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
         }
 
         androidMain.dependencies {
@@ -45,6 +55,12 @@ kotlin {
         }
 
         val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+            }
+        }
+
+        val desktopTest by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
             }
@@ -71,6 +87,12 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        (variant as? HasUnitTestBuilder)?.enableUnitTest = false
     }
 }
 

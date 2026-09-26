@@ -31,6 +31,23 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
 
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
+    implementation(libs.hikaricp)
+
     implementation(libs.postgres)
     implementation(libs.logback)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(platform(libs.testcontainers.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(libs.archunit.junit5)
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.testcontainers.junit)
+    testImplementation(libs.testcontainers.postgresql)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
