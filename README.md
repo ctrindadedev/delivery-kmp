@@ -119,6 +119,12 @@ depuração pelo PowerShell:
 .\gradlew.bat :app:installDebug
 ```
 
+Para abrir diretamente o primeiro restaurante pelo deep link:
+
+```powershell
+adb shell am start -W -a android.intent.action.VIEW -d "delivery://restaurantes/00000000-0000-0000-0000-000000000001" br.caio.delivery
+```
+
 ## Executar a API
 
 ```powershell

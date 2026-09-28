@@ -5,11 +5,14 @@ import br.caio.delivery.dominio.MenuItem
 import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 val sampleRestaurants =
     listOf(
         Restaurant(
-            id = RestaurantId.novo(),
+            id = RestaurantId(Uuid.parse("00000000-0000-0000-0000-000000000001")),
             nome = "Hamburgueria da Vila",
             itens =
                 listOf(
@@ -18,7 +21,7 @@ val sampleRestaurants =
                 ),
         ),
         Restaurant(
-            id = RestaurantId.novo(),
+            id = RestaurantId(Uuid.parse("00000000-0000-0000-0000-000000000002")),
             nome = "Pizza da Nonna",
             itens =
                 listOf(
@@ -27,7 +30,7 @@ val sampleRestaurants =
                 ),
         ),
         Restaurant(
-            id = RestaurantId.novo(),
+            id = RestaurantId(Uuid.parse("00000000-0000-0000-0000-000000000003")),
             nome = "Sabor Potiguar",
             itens =
                 listOf(

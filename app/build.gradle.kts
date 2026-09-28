@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
@@ -42,6 +43,7 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.material3.window.size)
             implementation(libs.material3.adaptive)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         commonTest.dependencies {
