@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import br.caio.delivery.app.theme.DeliveryTheme
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -170,7 +171,7 @@ private fun EmptyRestaurantList(
 @Preview
 @Composable
 private fun RestaurantListPreview() {
-    MaterialTheme {
+    DeliveryTheme(darkTheme = false) {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "",
@@ -183,7 +184,7 @@ private fun RestaurantListPreview() {
 @Preview
 @Composable
 private fun EmptyRestaurantListPreview() {
-    MaterialTheme {
+    DeliveryTheme(darkTheme = true) {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "inexistente",
