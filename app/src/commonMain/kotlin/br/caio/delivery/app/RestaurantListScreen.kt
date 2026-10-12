@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,6 +75,7 @@ private fun ColumnScope.RestaurantListContent(
 ) {
     Text(
         text = "Restaurantes perto de você",
+        modifier = Modifier.semantics { heading() },
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
     )
@@ -129,7 +134,12 @@ fun RestaurantCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick),
+                .sizeIn(minHeight = 48.dp)
+                .clickable(
+                    onClickLabel = "Abrir cardápio de ${restaurant.nome}",
+                    role = Role.Button,
+                    onClick = onClick,
+                ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -177,6 +187,7 @@ private fun EmptyRestaurantList(
         ) {
             Text(
                 text = "Nenhum restaurante encontrado",
+                modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
