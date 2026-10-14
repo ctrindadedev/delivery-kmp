@@ -1,4 +1,4 @@
-package br.caio.delivery
+package br.caio.delivery.infra.http
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
