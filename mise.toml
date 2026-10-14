@@ -13,6 +13,21 @@ gradlew.bat build --no-daemon
 cd services\\catalogo && go build ./...
 """
 
+[tasks.up]
+description = "Empacota a API e sobe API e PostgreSQL com docker compose"
+run = """
+./gradlew :api:installDist --no-daemon
+docker compose up -d --build
+"""
+run_windows = """
+gradlew.bat :api:installDist --no-daemon
+docker compose up -d --build
+"""
+
+[tasks.down]
+description = "Derruba o ambiente do docker compose, mantendo os dados do banco"
+run = "docker compose down"
+
 [tasks.test]
 description = "Roda os testes dos dois stacks: Kotlin/Gradle e Go"
 run = """
