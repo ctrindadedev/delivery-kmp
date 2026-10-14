@@ -55,7 +55,7 @@ Nesta etapa, o repositório contém:
 - Java 21
 - Go 1.23
 - gRPC e Protocol Buffers
-- PostgreSQL e Exposed, previstos para as próximas sprints
+- PostgreSQL, Flyway e Exposed
 
 ## Estrutura do repositório
 
@@ -125,27 +125,69 @@ Para abrir diretamente o primeiro restaurante pelo deep link:
 adb shell am start -W -a android.intent.action.VIEW -d "delivery://restaurantes/00000000-0000-0000-0000-000000000001" br.caio.delivery
 ```
 
-## Executar a API
+## Subir a API com o banco
 
-```powershell
-.\gradlew.bat :api:run
+Com Docker e mise instalados, na raiz do repositório:
+
+```sh
+mise run up
 ```
 
-Com a API ativa, acesse `http://localhost:8080/health`. A resposta esperada é:
+A tarefa empacota a API (`./gradlew :api:installDist`) e sobe a API e o PostgreSQL
+com `docker compose up -d --build`. A API só inicia depois que o banco está
+saudável e aplica as migrações do Flyway na subida. Com o ambiente ativo, acesse
+`http://localhost:8080/health`. A resposta esperada é:
 
 ```json
 {"status":"ok"}
 ```
 
-## Iniciar o PostgreSQL
+Para derrubar o ambiente mantendo os dados do banco, use `mise run down`.
+
+Sem o mise, os comandos equivalentes são:
 
 ```powershell
-docker compose up -d postgres
+.\gradlew.bat :api:installDist
+docker compose up -d --build
 ```
 
-O banco local usa, por padrão, o nome, o usuário e a senha `delivery`, na porta
-`5432`. Esses valores podem ser alterados pelas variáveis `POSTGRES_DB`,
-`POSTGRES_USER`, `POSTGRES_PASSWORD` e `POSTGRES_PORT`.
+### Variáveis de ambiente
+
+A API lê a conexão com o banco do ambiente. Sem as variáveis, usa o banco de
+desenvolvimento do `docker-compose.yml`.
+
+| Variável | Uso | Padrão |
+|---|---|---|
+| `DATABASE_URL` | URL JDBC do PostgreSQL | `jdbc:postgresql://localhost:5432/delivery` |
+| `DATABASE_USER` | Usuário do banco | `delivery` |
+| `DATABASE_PASSWORD` | Senha do banco | `delivery` |
+
+O `docker compose` aceita também:
+
+| Variável | Uso | Padrão |
+|---|---|---|
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Banco, usuário e senha criados no PostgreSQL e repassados à API | `delivery` |
+| `POSTGRES_PORT` | Porta do PostgreSQL no host | `5432` |
+| `API_PORT` | Porta da API no host | `8080` |
+
+Se a porta `5432` já estiver em uso por outro PostgreSQL, suba com outra porta, por
+exemplo `POSTGRES_PORT=55432 mise run up`. A API continua acessando o banco pela
+rede interna do Docker.
+
+### Executar a API fora do Docker
+
+Com o PostgreSQL ativo (`docker compose up -d postgres`):
+
+```powershell
+.\gradlew.bat :api:run
+```
+
+### Migrações
+
+O esquema do banco vem só das migrações versionadas em
+`api/src/main/resources/db/migration`, aplicadas pelo Flyway na subida da API.
+Uma migração já aplicada nunca é editada: cada mudança de esquema é um novo
+arquivo `V<n>__descricao.sql`.
 
 ## Executar o serviço Go
 

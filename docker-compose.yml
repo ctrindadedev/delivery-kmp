@@ -17,5 +17,19 @@ services:
       retries: 5
     restart: unless-stopped
 
+  api:
+    build: ./api
+    container_name: delivery-api
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-delivery}
+      DATABASE_USER: ${POSTGRES_USER:-delivery}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-delivery}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   delivery-postgres-data:
