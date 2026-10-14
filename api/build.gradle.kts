@@ -27,6 +27,9 @@ dependencies {
     implementation(libs.ktor.server.content.neg)
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.server.status.pages)
+    implementation(libs.smiley4.ktor.openapi)
+    implementation(libs.smiley4.ktor.swagger.ui)
+    implementation(libs.smiley4.schema.kenerator)
 
     implementation(libs.koin.ktor)
 

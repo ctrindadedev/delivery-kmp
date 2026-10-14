@@ -4,6 +4,7 @@ import br.caio.delivery.aplicacao.RepositorioDeItens
 import br.caio.delivery.aplicacao.RepositorioDeRestaurantes
 import br.caio.delivery.aplicacao.ServicoDeItens
 import br.caio.delivery.aplicacao.ServicoDeRestaurantes
+import br.caio.delivery.infra.http.configureOpenApi
 import br.caio.delivery.infra.http.configureRouting
 import br.caio.delivery.infra.http.configureSerialization
 import br.caio.delivery.infra.http.configureStatusPages
@@ -41,5 +42,6 @@ fun Application.moduloHttp(
 ) {
     configureSerialization()
     configureStatusPages()
+    configureOpenApi()
     configureRouting(ServicoDeRestaurantes(restaurantes), ServicoDeItens(restaurantes, itens))
 }
