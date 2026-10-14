@@ -31,12 +31,12 @@ class MigracaoTest {
     }
 
     @Test
-    fun `aplica a migracao inicial uma unica vez`() {
+    fun `aplica cada migracao uma unica vez`() {
         BancoDeDados.migrar(fonteDeDados)
 
-        val versoes = consultar("SELECT version FROM flyway_schema_history WHERE success")
+        val versoes = consultar("SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank")
 
-        assertEquals(listOf("1"), versoes)
+        assertEquals(listOf("1", "2"), versoes)
     }
 
     @Test
@@ -53,6 +53,18 @@ class MigracaoTest {
         val erro = assertThrows<SQLException> { inserirItem(restaurante, precoCentavos = 0) }
 
         assertEquals(VIOLACAO_DE_CHECK, erro.sqlState)
+    }
+
+    @Test
+    fun `recusa restaurante com nome repetido sem diferenciar maiusculas`() {
+        executar("INSERT INTO restaurante (id, nome) VALUES ('${UUID.randomUUID()}', 'Bistrô')")
+
+        val erro =
+            assertThrows<SQLException> {
+                executar("INSERT INTO restaurante (id, nome) VALUES ('${UUID.randomUUID()}', 'BISTRÔ')")
+            }
+
+        assertEquals(VIOLACAO_DE_UNICIDADE, erro.sqlState)
     }
 
     @Test
@@ -76,7 +88,7 @@ class MigracaoTest {
 
     private fun inserirRestaurante(): UUID =
         UUID.randomUUID().also { id ->
-            executar("INSERT INTO restaurante (id, nome) VALUES ('$id', 'Cantina')")
+            executar("INSERT INTO restaurante (id, nome) VALUES ('$id', 'Cantina $id')")
         }
 
     private fun inserirItem(
@@ -112,5 +124,6 @@ class MigracaoTest {
 
         private const val VIOLACAO_DE_CHECK = "23514"
         private const val VIOLACAO_DE_CHAVE_ESTRANGEIRA = "23503"
+        private const val VIOLACAO_DE_UNICIDADE = "23505"
     }
 }

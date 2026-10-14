@@ -10,6 +10,9 @@ kotlin {
             .get()
             .toInt(),
     )
+    compilerOptions {
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+    }
 }
 
 application {
