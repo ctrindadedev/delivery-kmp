@@ -25,11 +25,11 @@ class ServicoDeItensTest {
         }
 
     @Test
-    fun `recusa item com preco zero pela regra do dominio`() =
+    fun `recusa item com preco zero mesmo fora da borda http`() =
         runBlocking {
             val cantina = restaurantes.criar("Cantina")
 
-            assertThrows<RegraDeNegocioViolada> { itens.criar(cantina.id, dados("Água", 0)) }
+            assertThrows<DadosInvalidos> { itens.criar(cantina.id, dados("Água", 0)) }
             assertEquals(0, itens.listar(cantina.id, Pagina()).total)
         }
 
@@ -39,8 +39,17 @@ class ServicoDeItensTest {
             val cantina = restaurantes.criar("Cantina")
             val lasanha = itens.criar(cantina.id, dados("Lasanha", 4500))
 
-            assertThrows<RegraDeNegocioViolada> { itens.atualizar(cantina.id, lasanha.id, dados("Lasanha", 0)) }
+            assertThrows<DadosInvalidos> { itens.atualizar(cantina.id, lasanha.id, dados("Lasanha", 0)) }
             assertEquals(lasanha, itens.buscar(cantina.id, lasanha.id))
+        }
+
+    @Test
+    fun `recusa item com nome em branco e salva sem espacos nas pontas`() =
+        runBlocking {
+            val cantina = restaurantes.criar("Cantina")
+
+            assertThrows<DadosInvalidos> { itens.criar(cantina.id, dados("   ", 4500)) }
+            assertEquals("Lasanha", itens.criar(cantina.id, dados("  Lasanha ", 4500)).nome)
         }
 
     @Test

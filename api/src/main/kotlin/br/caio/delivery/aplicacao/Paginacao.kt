@@ -1,12 +1,13 @@
 package br.caio.delivery.aplicacao
 
+import br.caio.delivery.dominio.ErroDeCampo
+
 data class Pagina(
     val numero: Int = 1,
     val tamanho: Int = TAMANHO_PADRAO,
 ) {
     init {
-        require(numero >= 1) { "pagina deve ser maior ou igual a 1" }
-        require(tamanho in 1..TAMANHO_MAXIMO) { "tamanho deve estar entre 1 e $TAMANHO_MAXIMO" }
+        exigirValidos(validar(numero, tamanho))
     }
 
     val deslocamento: Long get() = (numero - 1).toLong() * tamanho
@@ -14,6 +15,15 @@ data class Pagina(
     companion object {
         const val TAMANHO_PADRAO = 20
         const val TAMANHO_MAXIMO = 100
+
+        fun validar(
+            numero: Int,
+            tamanho: Int,
+        ): List<ErroDeCampo> =
+            listOfNotNull(
+                ErroDeCampo("pagina", "deve ser maior ou igual a 1").takeIf { numero < 1 },
+                ErroDeCampo("tamanho", "deve estar entre 1 e $TAMANHO_MAXIMO").takeIf { tamanho !in 1..TAMANHO_MAXIMO },
+            )
     }
 }
 

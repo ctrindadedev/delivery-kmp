@@ -1,26 +1,9 @@
 package br.caio.delivery.infra.http
 
-import br.caio.delivery.infra.persistencia.RepositoriosEmMemoria
-import br.caio.delivery.moduloHttp
-import io.ktor.client.HttpClient
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.testing.testApplication
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -137,46 +120,10 @@ class RotasDeRestaurantesTest {
         }
 
     @Test
-    fun `item com preco zero responde 422`() =
+    fun `item com preco zero responde 400`() =
         testarApi {
             val restaurante = client.criarRestaurante("Cantina").id()
 
-            assertEquals(HttpStatusCode.UnprocessableEntity, client.criarItem(restaurante, "Água", 0).status)
+            assertEquals(HttpStatusCode.BadRequest, client.criarItem(restaurante, "Água", 0).status)
         }
-
-    private fun testarApi(bloco: suspend ApplicationTestBuilder.() -> Unit) =
-        testApplication {
-            val repositorios = RepositoriosEmMemoria()
-            application { moduloHttp(repositorios.restaurantes, repositorios.itens) }
-            bloco()
-        }
-
-    private suspend fun HttpClient.postJson(
-        caminho: String,
-        corpo: String,
-    ) = post(caminho) { corpoJson(corpo) }
-
-    private suspend fun HttpClient.putJson(
-        caminho: String,
-        corpo: String,
-    ) = put(caminho) { corpoJson(corpo) }
-
-    private fun HttpRequestBuilder.corpoJson(corpo: String) {
-        contentType(ContentType.Application.Json)
-        setBody(corpo)
-    }
-
-    private suspend fun HttpClient.criarRestaurante(nome: String) = postJson("/restaurantes", """{"nome":"$nome"}""")
-
-    private suspend fun HttpClient.criarItem(
-        restaurante: String,
-        nome: String,
-        precoCentavos: Long,
-    ) = postJson("/restaurantes/$restaurante/itens", """{"nome":"$nome","precoCentavos":$precoCentavos}""")
-
-    private suspend fun HttpResponse.json(): JsonObject = Json.parseToJsonElement(bodyAsText()).jsonObject
-
-    private suspend fun HttpResponse.id() = json()["id"]!!.jsonPrimitive.content
-
-    private fun JsonObject.nomes() = this["itens"]!!.jsonArray.map { it.jsonObject["nome"]!!.jsonPrimitive.content }
 }

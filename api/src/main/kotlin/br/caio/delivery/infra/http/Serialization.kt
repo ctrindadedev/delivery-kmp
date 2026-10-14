@@ -6,13 +6,14 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import kotlinx.serialization.json.Json
 
+val jsonDaApi =
+    Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
+
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
-        json(
-            Json {
-                prettyPrint = true
-                ignoreUnknownKeys = true
-            },
-        )
+        json(jsonDaApi)
     }
 }

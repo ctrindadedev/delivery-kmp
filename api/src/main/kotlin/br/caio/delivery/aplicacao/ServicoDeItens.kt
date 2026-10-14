@@ -3,8 +3,8 @@ package br.caio.delivery.aplicacao
 import br.caio.delivery.dominio.Dinheiro
 import br.caio.delivery.dominio.MenuItem
 import br.caio.delivery.dominio.MenuItemId
-import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
+import br.caio.delivery.dominio.validarItem
 
 data class DadosDoItem(
     val nome: String,
@@ -12,7 +12,11 @@ data class DadosDoItem(
     val preco: Dinheiro,
     val disponivel: Boolean,
 ) {
-    fun comId(id: MenuItemId) = MenuItem(id, nome, descricao, preco, disponivel)
+    fun comId(id: MenuItemId): MenuItem {
+        val item = MenuItem(id, nome.trim(), descricao.trim(), preco, disponivel)
+        exigirValidos(validarItem(item.nome, item.descricao, item.preco.centavos))
+        return item
+    }
 }
 
 class ServicoDeItens(
@@ -36,9 +40,8 @@ class ServicoDeItens(
         restauranteId: RestaurantId,
         dados: DadosDoItem,
     ): MenuItem {
-        val restaurante = carregarRestaurante(restauranteId)
         val item = dados.comId(MenuItemId.novo())
-        regraDeDominio { restaurante.adicionarItem(item) }
+        if (!restaurantes.existe(restauranteId)) throw restauranteNaoEncontrado(restauranteId)
         itens.criar(restauranteId, item)
         return item
     }
@@ -48,12 +51,9 @@ class ServicoDeItens(
         itemId: MenuItemId,
         dados: DadosDoItem,
     ): MenuItem {
-        val restaurante = carregarRestaurante(restauranteId)
-        val atual = restaurante.itens.find { it.id == itemId } ?: throw itemNaoEncontrado(itemId)
-        val atualizado = dados.comId(itemId)
-        regraDeDominio { restaurante.removerItem(atual.id).adicionarItem(atualizado) }
-        if (!itens.atualizar(restauranteId, atualizado)) throw itemNaoEncontrado(itemId)
-        return atualizado
+        val item = dados.comId(itemId)
+        if (!itens.atualizar(restauranteId, item)) throw naoEncontrado(restauranteId, itemId)
+        return item
     }
 
     suspend fun remover(
@@ -63,21 +63,13 @@ class ServicoDeItens(
         if (!itens.remover(restauranteId, itemId)) throw naoEncontrado(restauranteId, itemId)
     }
 
-    private suspend fun carregarRestaurante(id: RestaurantId): Restaurant =
-        restaurantes.buscarPorId(id) ?: throw restauranteNaoEncontrado(id)
-
     private suspend fun naoEncontrado(
         restauranteId: RestaurantId,
         itemId: MenuItemId,
-    ): RecursoNaoEncontrado = if (restaurantes.existe(restauranteId)) itemNaoEncontrado(itemId) else restauranteNaoEncontrado(restauranteId)
-
-    private fun itemNaoEncontrado(id: MenuItemId) = RecursoNaoEncontrado("Item ${id.value} não encontrado")
-
-    private inline fun regraDeDominio(bloco: () -> Unit) {
-        try {
-            bloco()
-        } catch (violacao: IllegalArgumentException) {
-            throw RegraDeNegocioViolada(violacao.message ?: "Regra de negócio violada")
+    ): RecursoNaoEncontrado =
+        if (restaurantes.existe(restauranteId)) {
+            RecursoNaoEncontrado("Item ${itemId.value} não encontrado")
+        } else {
+            restauranteNaoEncontrado(restauranteId)
         }
-    }
 }
