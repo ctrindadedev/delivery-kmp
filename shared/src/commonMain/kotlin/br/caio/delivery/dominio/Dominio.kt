@@ -75,13 +75,7 @@ data class Restaurant(
         return copy(itens = itens + item)
     }
 
-    fun removerItem(id: MenuItemId): Restaurant {
-        val novaLista = itens.filter { it.id != id }
-        require(novaLista.isNotEmpty()) {
-            "Restaurante precisa ter ao menos um item no cardápio"
-        }
-        return copy(itens = novaLista)
-    }
+    fun removerItem(id: MenuItemId): Restaurant = copy(itens = itens.filter { it.id != id })
 
     fun atualizarDisponibilidade(
         id: MenuItemId,
