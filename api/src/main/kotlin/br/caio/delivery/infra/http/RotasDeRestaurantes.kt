@@ -25,8 +25,8 @@ fun Route.rotasDeRestaurantes(
         }
 
         post {
-            val requisicao = call.receive<RestauranteRequisicao>()
-            val restaurante = restaurantes.criar(requisicao.nome)
+            val nome = call.receive<RestauranteRequisicao>().nomeValido()
+            val restaurante = restaurantes.criar(nome)
             call.response.header(HttpHeaders.Location, "/restaurantes/${restaurante.id.value}")
             call.respond(HttpStatusCode.Created, restaurante.paraResposta())
         }
@@ -37,8 +37,9 @@ fun Route.rotasDeRestaurantes(
             }
 
             put {
-                val requisicao = call.receive<RestauranteRequisicao>()
-                call.respond(restaurantes.atualizar(call.restauranteId(), requisicao.nome).paraResposta())
+                val restauranteId = call.restauranteId()
+                val nome = call.receive<RestauranteRequisicao>().nomeValido()
+                call.respond(restaurantes.atualizar(restauranteId, nome).paraResposta())
             }
 
             delete {
@@ -62,7 +63,7 @@ private fun Route.rotasDeItens(itens: ServicoDeItens) {
     post {
         val restauranteId = call.restauranteId()
         val requisicao = call.receive<ItemRequisicao>()
-        val item = itens.criar(restauranteId, requisicao.paraDados())
+        val item = itens.criar(restauranteId, requisicao.paraCriacao())
         call.response.header(HttpHeaders.Location, "/restaurantes/${restauranteId.value}/itens/${item.id.value}")
         call.respond(HttpStatusCode.Created, item.paraResposta())
     }
@@ -73,8 +74,10 @@ private fun Route.rotasDeItens(itens: ServicoDeItens) {
         }
 
         put {
-            val requisicao = call.receive<ItemRequisicao>()
-            val item = itens.atualizar(call.restauranteId(), call.itemId(), requisicao.paraDados())
+            val restauranteId = call.restauranteId()
+            val itemId = call.itemId()
+            val dados = call.receive<ItemRequisicao>().paraAtualizacao()
+            val item = itens.atualizar(restauranteId, itemId, dados)
             call.respond(item.paraResposta())
         }
 
