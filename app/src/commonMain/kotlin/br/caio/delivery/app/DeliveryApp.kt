@@ -34,7 +34,7 @@ fun DeliveryApp(darkTheme: Boolean = isSystemInDarkTheme()) {
                             restaurants = restaurants.saveRestaurant(restaurantId, name)
                         },
                         onSaveMenuItem = { restaurantId, menuItemId, draft ->
-                            draft.price.toCentsOrNull()?.let { priceInCents ->
+                            parsePriceInCents(draft.price)?.let { priceInCents ->
                                 restaurants =
                                     restaurants.saveMenuItem(
                                         restaurantId = restaurantId,
@@ -90,23 +90,3 @@ private fun List<Restaurant>.saveMenuItem(
             restaurant.copy(itens = items)
         }
     }
-
-private fun String.toCentsOrNull(): Long? {
-    val parts = trim().replace(',', '.').split('.')
-    val validParts = parts.size in 1..MAX_PRICE_PARTS && parts.all { it.isNotEmpty() && it.all(Char::isDigit) }
-    return if (validParts) {
-        val reais = parts[0].toLongOrNull()
-        val cents =
-            parts
-                .getOrNull(1)
-                ?.padEnd(2, '0')
-                ?.takeIf { it.length == 2 }
-                ?.toLongOrNull() ?: 0
-        reais?.let { (it * CENTS_PER_REAL + cents).takeIf { total -> total > 0 } }
-    } else {
-        null
-    }
-}
-
-private const val MAX_PRICE_PARTS = 2
-private const val CENTS_PER_REAL = 100L

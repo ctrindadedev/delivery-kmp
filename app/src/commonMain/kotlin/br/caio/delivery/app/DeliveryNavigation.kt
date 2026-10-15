@@ -158,16 +158,22 @@ private fun RestaurantFormRoute(
     editing: Boolean = false,
 ) {
     var name by rememberSaveable { mutableStateOf(initialName) }
+    var nameTouched by rememberSaveable { mutableStateOf(false) }
+    val validation = validateRestaurantForm(name)
     RestaurantFormScreen(
         state =
             RestaurantFormState(
                 name = name,
-                submitEnabled = submitAvailable && name.isNotBlank(),
+                nameError = validation.nameError.takeIf { nameTouched },
+                submitEnabled = submitAvailable && validation.isValid,
                 editing = editing,
             ),
         actions =
             RestaurantFormActions(
-                onNameChange = { name = it },
+                onNameChange = {
+                    name = it
+                    nameTouched = true
+                },
                 onSubmit = {
                     onSubmit(name.trim())
                     onBack()
@@ -221,19 +227,35 @@ private fun MenuItemFormRoute(
     var description by rememberSaveable { mutableStateOf(initialDraft.description) }
     var price by rememberSaveable { mutableStateOf(initialDraft.price) }
     var available by rememberSaveable { mutableStateOf(initialDraft.available) }
+    var nameTouched by rememberSaveable { mutableStateOf(false) }
+    var descriptionTouched by rememberSaveable { mutableStateOf(false) }
+    var priceTouched by rememberSaveable { mutableStateOf(false) }
     val draft = MenuItemDraft(name, description, price, available)
+    val validation = validateMenuItemForm(draft)
     MenuItemFormScreen(
         state =
             MenuItemFormState(
                 draft = draft,
-                submitEnabled = submitAvailable && draft.hasRequiredFields(),
+                nameError = validation.nameError.takeIf { nameTouched },
+                descriptionError = validation.descriptionError.takeIf { descriptionTouched },
+                priceError = validation.priceError.takeIf { priceTouched },
+                submitEnabled = submitAvailable && validation.isValid,
                 editing = editing,
             ),
         actions =
             MenuItemFormActions(
-                onNameChange = { name = it },
-                onDescriptionChange = { description = it },
-                onPriceChange = { price = it },
+                onNameChange = {
+                    name = it
+                    nameTouched = true
+                },
+                onDescriptionChange = {
+                    description = it
+                    descriptionTouched = true
+                },
+                onPriceChange = {
+                    price = it
+                    priceTouched = true
+                },
                 onAvailableChange = { available = it },
                 onSubmit = {
                     onSubmit(draft)

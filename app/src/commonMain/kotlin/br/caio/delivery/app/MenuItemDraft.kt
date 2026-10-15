@@ -5,6 +5,4 @@ data class MenuItemDraft(
     val description: String = "",
     val price: String = "",
     val available: Boolean = true,
-) {
-    fun hasRequiredFields(): Boolean = name.isNotBlank() && description.isNotBlank() && price.isNotBlank()
-}
+)
