@@ -2,6 +2,7 @@ package br.caio.delivery.app
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,8 +45,10 @@ fun RestaurantDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
-            TextButton(onClick = actions.onBack) {
-                Text("Voltar")
+            actions.onBack?.let { onBack ->
+                TextButton(onClick = onBack) {
+                    Text("Voltar")
+                }
             }
 
             if (restaurant == null) {
@@ -80,17 +83,10 @@ private fun RestaurantMenu(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-    ) {
-        TextButton(onClick = onEditRestaurant) {
-            Text("Editar restaurante")
-        }
-        Button(onClick = onCreateMenuItem) {
-            Text("Adicionar item")
-        }
-    }
+    RestaurantActions(
+        onEditRestaurant = onEditRestaurant,
+        onCreateMenuItem = onCreateMenuItem,
+    )
 
     Spacer(Modifier.height(20.dp))
 
@@ -108,6 +104,43 @@ private fun RestaurantMenu(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RestaurantActions(
+    onEditRestaurant: () -> Unit,
+    onCreateMenuItem: () -> Unit,
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (maxWidth >= ACTIONS_ROW_MIN_WIDTH) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+            ) {
+                RestaurantActionButtons(onEditRestaurant, onCreateMenuItem)
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
+            ) {
+                RestaurantActionButtons(onEditRestaurant, onCreateMenuItem)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RestaurantActionButtons(
+    onEditRestaurant: () -> Unit,
+    onCreateMenuItem: () -> Unit,
+) {
+    TextButton(onClick = onEditRestaurant) {
+        Text("Editar restaurante")
+    }
+    Button(onClick = onCreateMenuItem) {
+        Text("Adicionar item")
     }
 }
 
@@ -157,3 +190,5 @@ private fun MissingRestaurantPreview() {
         )
     }
 }
+
+private val ACTIONS_ROW_MIN_WIDTH = 400.dp

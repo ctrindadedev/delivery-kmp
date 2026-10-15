@@ -3,6 +3,7 @@ package br.caio.delivery.app
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,16 +27,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.caio.delivery.app.theme.DeliveryTheme
 import br.caio.delivery.dominio.Restaurant
-import br.caio.delivery.dominio.RestaurantId
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RestaurantListScreen(
     restaurants: List<Restaurant>,
     query: String,
-    onQueryChange: (String) -> Unit,
-    onRestaurantClick: (RestaurantId) -> Unit,
-    onCreateRestaurant: () -> Unit,
+    actions: RestaurantListActions,
+    modifier: Modifier = Modifier,
 ) {
     val visibleRestaurants =
         remember(restaurants, query) {
@@ -49,55 +48,69 @@ fun RestaurantListScreen(
 
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(modifier = Modifier.fillMaxWidth().widthIn(max = 840.dp)) {
-            Text(
-                text = "Restaurantes perto de você",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+            RestaurantListContent(
+                visibleRestaurants = visibleRestaurants,
+                query = query,
+                actions = actions,
             )
-            Text(
-                text = "Escolha um restaurante e descubra novos sabores.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        }
+    }
+}
 
-            Spacer(Modifier.height(20.dp))
+@Composable
+private fun ColumnScope.RestaurantListContent(
+    visibleRestaurants: List<Restaurant>,
+    query: String,
+    actions: RestaurantListActions,
+) {
+    Text(
+        text = "Restaurantes perto de você",
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+    )
+    Text(
+        text = "Escolha um restaurante e descubra novos sabores.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
-            CampoTexto(
-                value = query,
-                onValueChange = onQueryChange,
-                label = "Buscar restaurante",
-            )
+    Spacer(Modifier.height(20.dp))
 
-            Spacer(Modifier.height(12.dp))
+    CampoTexto(
+        value = query,
+        onValueChange = actions.onQueryChange,
+        label = "Buscar restaurante",
+    )
 
-            Button(
-                onClick = onCreateRestaurant,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text("Cadastrar restaurante")
-            }
+    Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(20.dp))
+    Button(
+        onClick = actions.onCreateRestaurant,
+        modifier = Modifier.align(Alignment.End),
+    ) {
+        Text("Cadastrar restaurante")
+    }
 
-            if (visibleRestaurants.isEmpty()) {
-                EmptyRestaurantList(query = query)
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(visibleRestaurants, key = { it.id.toString() }) { restaurant ->
-                        RestaurantCard(
-                            restaurant = restaurant,
-                            onClick = { onRestaurantClick(restaurant.id) },
-                        )
-                    }
-                }
+    Spacer(Modifier.height(20.dp))
+
+    if (visibleRestaurants.isEmpty()) {
+        EmptyRestaurantList(query = query)
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(visibleRestaurants, key = { it.id.toString() }) { restaurant ->
+                RestaurantCard(
+                    restaurant = restaurant,
+                    onClick = { actions.onRestaurantClick(restaurant.id) },
+                )
             }
         }
     }
@@ -183,9 +196,7 @@ private fun RestaurantListPreview() {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "",
-            onQueryChange = {},
-            onRestaurantClick = {},
-            onCreateRestaurant = {},
+            actions = RestaurantListActions({}, {}, {}),
         )
     }
 }
@@ -197,9 +208,7 @@ private fun EmptyRestaurantListPreview() {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "inexistente",
-            onQueryChange = {},
-            onRestaurantClick = {},
-            onCreateRestaurant = {},
+            actions = RestaurantListActions({}, {}, {}),
         )
     }
 }
