@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +35,7 @@ fun RestaurantListScreen(
     query: String,
     onQueryChange: (String) -> Unit,
     onRestaurantClick: (RestaurantId) -> Unit,
+    onCreateRestaurant: () -> Unit,
 ) {
     val visibleRestaurants =
         remember(restaurants, query) {
@@ -67,13 +68,20 @@ fun RestaurantListScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            OutlinedTextField(
+            CampoTexto(
                 value = query,
                 onValueChange = onQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Buscar restaurante") },
-                singleLine = true,
+                label = "Buscar restaurante",
             )
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = onCreateRestaurant,
+                modifier = Modifier.align(Alignment.End),
+            ) {
+                Text("Cadastrar restaurante")
+            }
 
             Spacer(Modifier.height(20.dp))
 
@@ -177,6 +185,7 @@ private fun RestaurantListPreview() {
             query = "",
             onQueryChange = {},
             onRestaurantClick = {},
+            onCreateRestaurant = {},
         )
     }
 }
@@ -190,6 +199,7 @@ private fun EmptyRestaurantListPreview() {
             query = "inexistente",
             onQueryChange = {},
             onRestaurantClick = {},
+            onCreateRestaurant = {},
         )
     }
 }

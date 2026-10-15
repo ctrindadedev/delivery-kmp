@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,14 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import br.caio.delivery.app.theme.DeliveryTheme
-import br.caio.delivery.dominio.MenuItem
+import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RestaurantDetailScreen(
     restaurant: Restaurant?,
-    onBack: () -> Unit,
+    actions: RestaurantDetailActions,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -44,21 +44,31 @@ fun RestaurantDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
-            TextButton(onClick = onBack) {
+            TextButton(onClick = actions.onBack) {
                 Text("Voltar")
             }
 
             if (restaurant == null) {
                 MissingRestaurantMessage()
             } else {
-                RestaurantMenu(restaurant)
+                RestaurantMenu(
+                    restaurant = restaurant,
+                    onEditRestaurant = actions.onEditRestaurant,
+                    onCreateMenuItem = actions.onCreateMenuItem,
+                    onEditMenuItem = actions.onEditMenuItem,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun RestaurantMenu(restaurant: Restaurant) {
+private fun RestaurantMenu(
+    restaurant: Restaurant,
+    onEditRestaurant: () -> Unit,
+    onCreateMenuItem: () -> Unit,
+    onEditMenuItem: (MenuItemId) -> Unit,
+) {
     Text(
         text = restaurant.nome,
         style = MaterialTheme.typography.headlineMedium,
@@ -70,6 +80,18 @@ private fun RestaurantMenu(restaurant: Restaurant) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+    ) {
+        TextButton(onClick = onEditRestaurant) {
+            Text("Editar restaurante")
+        }
+        Button(onClick = onCreateMenuItem) {
+            Text("Adicionar item")
+        }
+    }
+
     Spacer(Modifier.height(20.dp))
 
     if (restaurant.itens.isEmpty()) {
@@ -80,45 +102,9 @@ private fun RestaurantMenu(restaurant: Restaurant) {
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             restaurant.itens.forEach { item ->
-                MenuItemCard(item)
-            }
-        }
-    }
-}
-
-@Composable
-private fun MenuItemCard(item: MenuItem) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = item.nome,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = item.preco.exibir(),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = item.descricao,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (!item.disponivel) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "Indisponível",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.error,
+                ItemLinha(
+                    item = item,
+                    onClick = { onEditMenuItem(item.id) },
                 )
             }
         }
@@ -145,7 +131,18 @@ private fun RestaurantDetailPreview() {
     DeliveryTheme(darkTheme = false) {
         RestaurantDetailScreen(
             restaurant = sampleRestaurants.first(),
-            onBack = {},
+            actions = RestaurantDetailActions({}, {}, {}, {}),
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun EmptyRestaurantMenuPreview() {
+    DeliveryTheme(darkTheme = false) {
+        RestaurantDetailScreen(
+            restaurant = sampleRestaurants.first().copy(itens = emptyList()),
+            actions = RestaurantDetailActions({}, {}, {}, {}),
         )
     }
 }
@@ -156,7 +153,7 @@ private fun MissingRestaurantPreview() {
     DeliveryTheme(darkTheme = true) {
         RestaurantDetailScreen(
             restaurant = null,
-            onBack = {},
+            actions = RestaurantDetailActions({}, {}, {}, {}),
         )
     }
 }
