@@ -189,6 +189,26 @@ O esquema do banco vem só das migrações versionadas em
 Uma migração já aplicada nunca é editada: cada mudança de esquema é um novo
 arquivo `V<n>__descricao.sql`.
 
+## Documentação da API
+
+A especificação OpenAPI é gerada a partir do código das rotas e fica disponível
+com a API ativa:
+
+- Swagger UI: `http://localhost:8080/swagger`
+- Especificação OpenAPI (JSON): `http://localhost:8080/openapi.json`
+
+| Método | Rota | Uso |
+|---|---|---|
+| `GET` | `/restaurantes?nome=&pagina=&tamanho=` | Lista restaurantes, com filtro por nome e paginação (até 100 por página) |
+| `POST` | `/restaurantes` | Cadastra um restaurante |
+| `GET`, `PUT`, `DELETE` | `/restaurantes/{id}` | Busca, atualiza e remove um restaurante |
+| `GET`, `POST` | `/restaurantes/{id}/itens` | Lista e adiciona itens do cardápio |
+| `GET`, `PUT`, `DELETE` | `/restaurantes/{id}/itens/{itemId}` | Busca, atualiza e remove um item |
+
+Os erros seguem o formato *problem details* (RFC 9457), com o tipo de conteúdo
+`application/problem+json`. Erros de validação trazem a lista `erros`, com o campo e a
+mensagem.
+
 ## Executar o serviço Go
 
 ```powershell

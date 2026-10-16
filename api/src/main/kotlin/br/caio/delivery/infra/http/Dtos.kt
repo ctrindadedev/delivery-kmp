@@ -4,7 +4,6 @@ import br.caio.delivery.aplicacao.DadosDoItem
 import br.caio.delivery.aplicacao.PaginaDeResultados
 import br.caio.delivery.aplicacao.exigirValidos
 import br.caio.delivery.dominio.Dinheiro
-import br.caio.delivery.dominio.ErroDeCampo
 import br.caio.delivery.dominio.MenuItem
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.validarItem
@@ -13,9 +12,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RestauranteRequisicao(
-    val nome: String? = null,
+    val nome: String,
 ) {
-    fun nomeValido(): String = nome.orEmpty().also { exigirValidos(validarRestaurante(it)) }
+    fun nomeValido(): String = nome.also { exigirValidos(validarRestaurante(it)) }
 }
 
 @Serializable
@@ -25,29 +24,33 @@ data class RestauranteResposta(
 )
 
 @Serializable
-data class ItemRequisicao(
-    val nome: String? = null,
-    val descricao: String? = null,
-    val precoCentavos: Long? = null,
-    val disponivel: Boolean? = null,
+data class NovoItemRequisicao(
+    val nome: String,
+    val descricao: String = "",
+    val precoCentavos: Long,
+    val disponivel: Boolean = true,
 ) {
-    fun paraCriacao() = paraDados(disponivelSeAusente = true)
+    fun paraDados() = dadosDoItem(nome, descricao, precoCentavos, disponivel)
+}
 
-    fun paraAtualizacao() = paraDados(disponivelSeAusente = null)
+@Serializable
+data class ItemRequisicao(
+    val nome: String,
+    val descricao: String = "",
+    val precoCentavos: Long,
+    val disponivel: Boolean,
+) {
+    fun paraDados() = dadosDoItem(nome, descricao, precoCentavos, disponivel)
+}
 
-    private fun paraDados(disponivelSeAusente: Boolean?): DadosDoItem {
-        val disponibilidade = disponivel ?: disponivelSeAusente
-        exigirValidos(
-            validarItem(nome.orEmpty(), descricao.orEmpty(), precoCentavos) +
-                listOfNotNull(ErroDeCampo("disponivel", "é obrigatório").takeIf { disponibilidade == null }),
-        )
-        return DadosDoItem(
-            nome = nome.orEmpty(),
-            descricao = descricao.orEmpty(),
-            preco = Dinheiro(requireNotNull(precoCentavos)),
-            disponivel = requireNotNull(disponibilidade),
-        )
-    }
+private fun dadosDoItem(
+    nome: String,
+    descricao: String,
+    precoCentavos: Long,
+    disponivel: Boolean,
+): DadosDoItem {
+    exigirValidos(validarItem(nome, descricao, precoCentavos))
+    return DadosDoItem(nome, descricao, Dinheiro(precoCentavos), disponivel)
 }
 
 @Serializable

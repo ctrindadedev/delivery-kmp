@@ -15,6 +15,7 @@ import io.ktor.server.plugins.ParameterConversionException
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
 import io.ktor.server.response.respondText
+import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
@@ -64,9 +65,18 @@ fun Application.configureStatusPages() {
             call.responderCamposInvalidos(listOf(ErroDeCampo(erro.parameterName, "tem formato inválido")))
         }
         exception<BadRequestException> { call, erro ->
-            call.application.environment.log
-                .debug("Corpo da requisição recusado", erro)
-            call.responderProblema(TipoDeProblema.CORPO_INVALIDO, "O corpo deve ser um JSON válido com campos do tipo esperado")
+            val camposAusentes =
+                generateSequence<Throwable>(erro) { it.cause }
+                    .filterIsInstance<MissingFieldException>()
+                    .firstOrNull()
+                    ?.missingFields
+            if (camposAusentes != null) {
+                call.responderCamposInvalidos(camposAusentes.map { ErroDeCampo(it, "é obrigatório") })
+            } else {
+                call.application.environment.log
+                    .debug("Corpo da requisição recusado", erro)
+                call.responderProblema(TipoDeProblema.CORPO_INVALIDO, "O corpo deve ser um JSON válido com campos do tipo esperado")
+            }
         }
         exception<RecursoNaoEncontrado> { call, erro ->
             call.responderProblema(TipoDeProblema.RECURSO_NAO_ENCONTRADO, erro.message.orEmpty())
