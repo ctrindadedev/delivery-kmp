@@ -3,12 +3,14 @@ package br.caio.delivery.app
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,21 +23,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.caio.delivery.app.theme.DeliveryTheme
 import br.caio.delivery.dominio.Restaurant
-import br.caio.delivery.dominio.RestaurantId
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RestaurantListScreen(
     restaurants: List<Restaurant>,
     query: String,
-    onQueryChange: (String) -> Unit,
-    onRestaurantClick: (RestaurantId) -> Unit,
-    onCreateRestaurant: () -> Unit,
+    actions: RestaurantListActions,
+    modifier: Modifier = Modifier,
 ) {
     val visibleRestaurants =
         remember(restaurants, query) {
@@ -49,55 +52,70 @@ fun RestaurantListScreen(
 
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(modifier = Modifier.fillMaxWidth().widthIn(max = 840.dp)) {
-            Text(
-                text = "Restaurantes perto de você",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+            RestaurantListContent(
+                visibleRestaurants = visibleRestaurants,
+                query = query,
+                actions = actions,
             )
-            Text(
-                text = "Escolha um restaurante e descubra novos sabores.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        }
+    }
+}
 
-            Spacer(Modifier.height(20.dp))
+@Composable
+private fun ColumnScope.RestaurantListContent(
+    visibleRestaurants: List<Restaurant>,
+    query: String,
+    actions: RestaurantListActions,
+) {
+    Text(
+        text = "Restaurantes perto de você",
+        modifier = Modifier.semantics { heading() },
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+    )
+    Text(
+        text = "Escolha um restaurante e descubra novos sabores.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
-            CampoTexto(
-                value = query,
-                onValueChange = onQueryChange,
-                label = "Buscar restaurante",
-            )
+    Spacer(Modifier.height(20.dp))
 
-            Spacer(Modifier.height(12.dp))
+    CampoTexto(
+        value = query,
+        onValueChange = actions.onQueryChange,
+        label = "Buscar restaurante",
+    )
 
-            Button(
-                onClick = onCreateRestaurant,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text("Cadastrar restaurante")
-            }
+    Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(20.dp))
+    Button(
+        onClick = actions.onCreateRestaurant,
+        modifier = Modifier.align(Alignment.End),
+    ) {
+        Text("Cadastrar restaurante")
+    }
 
-            if (visibleRestaurants.isEmpty()) {
-                EmptyRestaurantList(query = query)
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(visibleRestaurants, key = { it.id.toString() }) { restaurant ->
-                        RestaurantCard(
-                            restaurant = restaurant,
-                            onClick = { onRestaurantClick(restaurant.id) },
-                        )
-                    }
-                }
+    Spacer(Modifier.height(20.dp))
+
+    if (visibleRestaurants.isEmpty()) {
+        EmptyRestaurantList(query = query)
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(visibleRestaurants, key = { it.id.toString() }) { restaurant ->
+                RestaurantCard(
+                    restaurant = restaurant,
+                    onClick = { actions.onRestaurantClick(restaurant.id) },
+                )
             }
         }
     }
@@ -116,7 +134,12 @@ fun RestaurantCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick),
+                .sizeIn(minHeight = 48.dp)
+                .clickable(
+                    onClickLabel = "Abrir cardápio de ${restaurant.nome}",
+                    role = Role.Button,
+                    onClick = onClick,
+                ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -164,6 +187,7 @@ private fun EmptyRestaurantList(
         ) {
             Text(
                 text = "Nenhum restaurante encontrado",
+                modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -183,9 +207,7 @@ private fun RestaurantListPreview() {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "",
-            onQueryChange = {},
-            onRestaurantClick = {},
-            onCreateRestaurant = {},
+            actions = RestaurantListActions({}, {}, {}),
         )
     }
 }
@@ -197,9 +219,7 @@ private fun EmptyRestaurantListPreview() {
         RestaurantListScreen(
             restaurants = sampleRestaurants,
             query = "inexistente",
-            onQueryChange = {},
-            onRestaurantClick = {},
-            onCreateRestaurant = {},
+            actions = RestaurantListActions({}, {}, {}),
         )
     }
 }

@@ -243,6 +243,17 @@ mise run test
 O pipeline publica o APK Android e o JAR executável de desktop na seção
 **Artifacts** de cada execução do GitHub Actions.
 
+## Acessibilidade
+
+A interface identifica os títulos como cabeçalhos para facilitar a navegação por
+leitores de tela. Os cartões de restaurante são anunciados como botões com a ação
+de abrir o cardápio e preservam uma área interativa mínima de 48 dp. O campo de
+busca mantém um rótulo textual visível.
+
+Em 16/10/2026, o fluxo principal foi percorrido manualmente com o TalkBack no
+Android. A busca, os cartões, a tela de detalhes, os formulários e suas ações
+foram anunciados e puderam ser acionados pelo leitor de tela.
+
 ## Referência
 
 Projeto de referência da disciplina:

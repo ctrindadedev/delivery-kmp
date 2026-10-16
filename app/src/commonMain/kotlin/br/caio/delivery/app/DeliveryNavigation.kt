@@ -48,18 +48,28 @@ data class MenuItemEditRoute(
 data class DeliveryUiState(
     val restaurants: List<Restaurant>,
     val query: String,
+    val selectedRestaurantId: RestaurantId?,
 )
 
 data class DeliveryActions(
     val onQueryChange: (String) -> Unit,
+    val onRestaurantSelected: (RestaurantId) -> Unit,
     val onSaveRestaurant: (RestaurantId?, String) -> Unit,
     val onSaveMenuItem: (RestaurantId, MenuItemId?, MenuItemDraft) -> Unit,
+)
+
+data class WideNavigationActions(
+    val onCreateRestaurant: () -> Unit,
+    val onEditRestaurant: (RestaurantId) -> Unit,
+    val onCreateMenuItem: (RestaurantId) -> Unit,
+    val onEditMenuItem: (RestaurantId, MenuItemId) -> Unit,
 )
 
 @Composable
 fun DeliveryNavigation(
     state: DeliveryUiState,
     actions: DeliveryActions,
+    largo: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -68,7 +78,7 @@ fun DeliveryNavigation(
         startDestination = RestaurantListRoute,
         modifier = modifier,
     ) {
-        restaurantListDestination(state, actions, navController)
+        restaurantListDestination(state, actions, largo, navController)
         restaurantDetailDestination(state.restaurants, navController)
         restaurantFormDestinations(state.restaurants, actions, navController)
         menuItemFormDestinations(state.restaurants, actions, navController)
@@ -78,18 +88,44 @@ fun DeliveryNavigation(
 private fun NavGraphBuilder.restaurantListDestination(
     state: DeliveryUiState,
     actions: DeliveryActions,
+    largo: Boolean,
     navController: NavHostController,
 ) {
     composable<RestaurantListRoute> {
-        RestaurantListScreen(
-            restaurants = state.restaurants,
-            query = state.query,
-            onQueryChange = actions.onQueryChange,
-            onRestaurantClick = { restaurantId ->
-                navController.navigate(RestaurantDetailRoute(restaurantId.asRouteValue()))
-            },
-            onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
-        )
+        if (largo) {
+            RestaurantListDetailScreen(
+                state = state,
+                actions = actions,
+                navigationActions =
+                    WideNavigationActions(
+                        onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
+                        onEditRestaurant = { restaurantId ->
+                            navController.navigate(RestaurantEditRoute(restaurantId.asRouteValue()))
+                        },
+                        onCreateMenuItem = { restaurantId ->
+                            navController.navigate(MenuItemCreateRoute(restaurantId.asRouteValue()))
+                        },
+                        onEditMenuItem = { restaurantId, menuItemId ->
+                            navController.navigate(
+                                MenuItemEditRoute(restaurantId.asRouteValue(), menuItemId.asRouteValue()),
+                            )
+                        },
+                    ),
+            )
+        } else {
+            RestaurantListScreen(
+                restaurants = state.restaurants,
+                query = state.query,
+                actions =
+                    RestaurantListActions(
+                        onQueryChange = actions.onQueryChange,
+                        onRestaurantClick = { restaurantId ->
+                            navController.navigate(RestaurantDetailRoute(restaurantId.asRouteValue()))
+                        },
+                        onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
+                    ),
+            )
+        }
     }
 }
 
@@ -158,16 +194,22 @@ private fun RestaurantFormRoute(
     editing: Boolean = false,
 ) {
     var name by rememberSaveable { mutableStateOf(initialName) }
+    var nameTouched by rememberSaveable { mutableStateOf(false) }
+    val validation = validateRestaurantForm(name)
     RestaurantFormScreen(
         state =
             RestaurantFormState(
                 name = name,
-                submitEnabled = submitAvailable && name.isNotBlank(),
+                nameError = validation.nameError.takeIf { nameTouched },
+                submitEnabled = submitAvailable && validation.isValid,
                 editing = editing,
             ),
         actions =
             RestaurantFormActions(
-                onNameChange = { name = it },
+                onNameChange = {
+                    name = it
+                    nameTouched = true
+                },
                 onSubmit = {
                     onSubmit(name.trim())
                     onBack()
@@ -221,19 +263,35 @@ private fun MenuItemFormRoute(
     var description by rememberSaveable { mutableStateOf(initialDraft.description) }
     var price by rememberSaveable { mutableStateOf(initialDraft.price) }
     var available by rememberSaveable { mutableStateOf(initialDraft.available) }
+    var nameTouched by rememberSaveable { mutableStateOf(false) }
+    var descriptionTouched by rememberSaveable { mutableStateOf(false) }
+    var priceTouched by rememberSaveable { mutableStateOf(false) }
     val draft = MenuItemDraft(name, description, price, available)
+    val validation = validateMenuItemForm(draft)
     MenuItemFormScreen(
         state =
             MenuItemFormState(
                 draft = draft,
-                submitEnabled = submitAvailable && draft.hasRequiredFields(),
+                nameError = validation.nameError.takeIf { nameTouched },
+                descriptionError = validation.descriptionError.takeIf { descriptionTouched },
+                priceError = validation.priceError.takeIf { priceTouched },
+                submitEnabled = submitAvailable && validation.isValid,
                 editing = editing,
             ),
         actions =
             MenuItemFormActions(
-                onNameChange = { name = it },
-                onDescriptionChange = { description = it },
-                onPriceChange = { price = it },
+                onNameChange = {
+                    name = it
+                    nameTouched = true
+                },
+                onDescriptionChange = {
+                    description = it
+                    descriptionTouched = true
+                },
+                onPriceChange = {
+                    price = it
+                    priceTouched = true
+                },
                 onAvailableChange = { available = it },
                 onSubmit = {
                     onSubmit(draft)
