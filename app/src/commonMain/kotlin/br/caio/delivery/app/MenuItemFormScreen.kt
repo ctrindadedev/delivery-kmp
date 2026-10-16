@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import br.caio.delivery.app.theme.DeliveryTheme
@@ -99,7 +101,15 @@ private fun MenuItemFields(
         value = state.draft.name,
         onValueChange = actions.onNameChange,
         label = "Nome do item",
-        options = CampoTextoOptions(error = state.nameError),
+        options =
+            CampoTextoOptions(
+                error = state.nameError,
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next,
+                    ),
+            ),
     )
     Spacer(Modifier.height(12.dp))
     CampoTexto(
@@ -110,6 +120,11 @@ private fun MenuItemFields(
             CampoTextoOptions(
                 error = state.descriptionError,
                 singleLine = false,
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next,
+                    ),
             ),
     )
     Spacer(Modifier.height(12.dp))
@@ -120,7 +135,11 @@ private fun MenuItemFields(
         options =
             CampoTextoOptions(
                 error = state.priceError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    ),
             ),
     )
     AvailabilityField(
