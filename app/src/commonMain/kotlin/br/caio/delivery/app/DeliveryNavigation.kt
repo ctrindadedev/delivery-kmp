@@ -48,18 +48,28 @@ data class MenuItemEditRoute(
 data class DeliveryUiState(
     val restaurants: List<Restaurant>,
     val query: String,
+    val selectedRestaurantId: RestaurantId?,
 )
 
 data class DeliveryActions(
     val onQueryChange: (String) -> Unit,
+    val onRestaurantSelected: (RestaurantId) -> Unit,
     val onSaveRestaurant: (RestaurantId?, String) -> Unit,
     val onSaveMenuItem: (RestaurantId, MenuItemId?, MenuItemDraft) -> Unit,
+)
+
+data class WideNavigationActions(
+    val onCreateRestaurant: () -> Unit,
+    val onEditRestaurant: (RestaurantId) -> Unit,
+    val onCreateMenuItem: (RestaurantId) -> Unit,
+    val onEditMenuItem: (RestaurantId, MenuItemId) -> Unit,
 )
 
 @Composable
 fun DeliveryNavigation(
     state: DeliveryUiState,
     actions: DeliveryActions,
+    largo: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -68,7 +78,7 @@ fun DeliveryNavigation(
         startDestination = RestaurantListRoute,
         modifier = modifier,
     ) {
-        restaurantListDestination(state, actions, navController)
+        restaurantListDestination(state, actions, largo, navController)
         restaurantDetailDestination(state.restaurants, navController)
         restaurantFormDestinations(state.restaurants, actions, navController)
         menuItemFormDestinations(state.restaurants, actions, navController)
@@ -78,18 +88,44 @@ fun DeliveryNavigation(
 private fun NavGraphBuilder.restaurantListDestination(
     state: DeliveryUiState,
     actions: DeliveryActions,
+    largo: Boolean,
     navController: NavHostController,
 ) {
     composable<RestaurantListRoute> {
-        RestaurantListScreen(
-            restaurants = state.restaurants,
-            query = state.query,
-            onQueryChange = actions.onQueryChange,
-            onRestaurantClick = { restaurantId ->
-                navController.navigate(RestaurantDetailRoute(restaurantId.asRouteValue()))
-            },
-            onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
-        )
+        if (largo) {
+            RestaurantListDetailScreen(
+                state = state,
+                actions = actions,
+                navigationActions =
+                    WideNavigationActions(
+                        onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
+                        onEditRestaurant = { restaurantId ->
+                            navController.navigate(RestaurantEditRoute(restaurantId.asRouteValue()))
+                        },
+                        onCreateMenuItem = { restaurantId ->
+                            navController.navigate(MenuItemCreateRoute(restaurantId.asRouteValue()))
+                        },
+                        onEditMenuItem = { restaurantId, menuItemId ->
+                            navController.navigate(
+                                MenuItemEditRoute(restaurantId.asRouteValue(), menuItemId.asRouteValue()),
+                            )
+                        },
+                    ),
+            )
+        } else {
+            RestaurantListScreen(
+                restaurants = state.restaurants,
+                query = state.query,
+                actions =
+                    RestaurantListActions(
+                        onQueryChange = actions.onQueryChange,
+                        onRestaurantClick = { restaurantId ->
+                            navController.navigate(RestaurantDetailRoute(restaurantId.asRouteValue()))
+                        },
+                        onCreateRestaurant = { navController.navigate(RestaurantCreateRoute) },
+                    ),
+            )
+        }
     }
 }
 
