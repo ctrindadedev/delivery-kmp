@@ -44,6 +44,8 @@ kotlin {
             implementation(libs.material3.window.size)
             implementation(libs.material3.adaptive)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
         }
 
         commonTest.dependencies {
@@ -59,6 +61,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
 

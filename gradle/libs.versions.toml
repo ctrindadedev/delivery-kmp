@@ -19,6 +19,8 @@ junit           = "5.11.4"
 navigation      = "2.8.0-alpha10"
 composeAdaptive = "1.0.0-alpha03"
 serialization   = "1.7.3"
+lifecycle      = "2.8.4"
+coroutines     = "1.9.0"
 smiley4         = "5.2.0"
 schemaKenerator = "2.3.0"
 
@@ -59,6 +61,9 @@ material3-window-size     = { module = "org.jetbrains.compose.material3:material
 material3-adaptive        = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "composeAdaptive" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose",      version.ref = "activityCompose" }
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime-compose   = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+kotlinx-coroutines-swing    = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 
 [plugins]
 kotlinMultiplatform       = { id = "org.jetbrains.kotlin.multiplatform",          version.ref = "kotlin" }
