@@ -1,8 +1,10 @@
 package br.caio.delivery.app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -14,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import br.caio.delivery.dominio.MenuItemId
-import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 import kotlinx.serialization.Serializable
 
@@ -45,12 +46,6 @@ data class MenuItemEditRoute(
     val menuItemId: String,
 )
 
-data class DeliveryUiState(
-    val restaurants: List<Restaurant>,
-    val query: String,
-    val selectedRestaurantId: RestaurantId?,
-)
-
 data class DeliveryActions(
     val onQueryChange: (String) -> Unit,
     val onRestaurantSelected: (RestaurantId) -> Unit,
@@ -67,34 +62,38 @@ data class WideNavigationActions(
 
 @Composable
 fun DeliveryNavigation(
-    state: DeliveryUiState,
+    state: State<RestaurantListUiState>,
     actions: DeliveryActions,
     largo: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
+    val wide = rememberUpdatedState(largo)
+    val currentActions = rememberUpdatedState(actions)
     NavHost(
         navController = navController,
         startDestination = RestaurantListRoute,
         modifier = modifier,
     ) {
-        restaurantListDestination(state, actions, largo, navController)
-        restaurantDetailDestination(state.restaurants, navController)
-        restaurantFormDestinations(state.restaurants, actions, navController)
-        menuItemFormDestinations(state.restaurants, actions, navController)
+        restaurantListDestination(state, currentActions, wide, navController)
+        restaurantDetailDestination(state, navController)
+        restaurantFormDestinations(state, currentActions, navController)
+        menuItemFormDestinations(state, currentActions, navController)
     }
 }
 
 private fun NavGraphBuilder.restaurantListDestination(
-    state: DeliveryUiState,
-    actions: DeliveryActions,
-    largo: Boolean,
+    state: State<RestaurantListUiState>,
+    currentActions: State<DeliveryActions>,
+    wide: State<Boolean>,
     navController: NavHostController,
 ) {
     composable<RestaurantListRoute> {
-        if (largo) {
+        val uiState = state.value
+        val actions = currentActions.value
+        if (wide.value) {
             RestaurantListDetailScreen(
-                state = state,
+                state = uiState,
                 actions = actions,
                 navigationActions =
                     WideNavigationActions(
@@ -114,8 +113,8 @@ private fun NavGraphBuilder.restaurantListDestination(
             )
         } else {
             RestaurantListScreen(
-                restaurants = state.restaurants,
-                query = state.query,
+                visibleRestaurants = uiState.visibleRestaurants,
+                query = uiState.query,
                 actions =
                     RestaurantListActions(
                         onQueryChange = actions.onQueryChange,
@@ -130,7 +129,7 @@ private fun NavGraphBuilder.restaurantListDestination(
 }
 
 private fun NavGraphBuilder.restaurantDetailDestination(
-    restaurants: List<Restaurant>,
+    state: State<RestaurantListUiState>,
     navController: NavHostController,
 ) {
     composable<RestaurantDetailRoute>(
@@ -139,7 +138,7 @@ private fun NavGraphBuilder.restaurantDetailDestination(
         val route = entry.toRoute<RestaurantDetailRoute>()
         val restaurantId = route.restaurantId.toRestaurantIdOrNull()
         RestaurantDetailScreen(
-            restaurant = restaurants.firstOrNull { it.id == restaurantId },
+            restaurant = state.value.restaurants.firstOrNull { it.id == restaurantId },
             actions =
                 RestaurantDetailActions(
                     onBack = { navController.popBackStack() },
@@ -162,22 +161,23 @@ private fun NavGraphBuilder.restaurantDetailDestination(
 }
 
 private fun NavGraphBuilder.restaurantFormDestinations(
-    restaurants: List<Restaurant>,
-    actions: DeliveryActions,
+    state: State<RestaurantListUiState>,
+    actions: State<DeliveryActions>,
     navController: NavHostController,
 ) {
     composable<RestaurantCreateRoute> {
         RestaurantFormRoute(
-            onSubmit = { name -> actions.onSaveRestaurant(null, name) },
+            onSubmit = { name -> actions.value.onSaveRestaurant(null, name) },
             onBack = { navController.popBackStack() },
         )
     }
     composable<RestaurantEditRoute> { entry ->
         val route = entry.toRoute<RestaurantEditRoute>()
         val restaurantId = route.restaurantId.toRestaurantIdOrNull()
+        val restaurant = state.value.restaurants.firstOrNull { it.id == restaurantId }
         RestaurantFormRoute(
-            initialName = restaurants.firstOrNull { it.id == restaurantId }?.nome.orEmpty(),
-            onSubmit = { name -> restaurantId?.let { actions.onSaveRestaurant(it, name) } },
+            initialName = restaurant?.nome.orEmpty(),
+            onSubmit = { name -> restaurantId?.let { actions.value.onSaveRestaurant(it, name) } },
             onBack = { navController.popBackStack() },
             submitAvailable = restaurantId != null,
             editing = true,
@@ -220,14 +220,14 @@ private fun RestaurantFormRoute(
 }
 
 private fun NavGraphBuilder.menuItemFormDestinations(
-    restaurants: List<Restaurant>,
-    actions: DeliveryActions,
+    state: State<RestaurantListUiState>,
+    actions: State<DeliveryActions>,
     navController: NavHostController,
 ) {
     composable<MenuItemCreateRoute> { entry ->
         val restaurantId = entry.toRoute<MenuItemCreateRoute>().restaurantId.toRestaurantIdOrNull()
         MenuItemFormRoute(
-            onSubmit = { draft -> restaurantId?.let { actions.onSaveMenuItem(it, null, draft) } },
+            onSubmit = { draft -> restaurantId?.let { actions.value.onSaveMenuItem(it, null, draft) } },
             onBack = { navController.popBackStack() },
             submitAvailable = restaurantId != null,
         )
@@ -236,12 +236,13 @@ private fun NavGraphBuilder.menuItemFormDestinations(
         val route = entry.toRoute<MenuItemEditRoute>()
         val restaurantId = route.restaurantId.toRestaurantIdOrNull()
         val menuItemId = route.menuItemId.toMenuItemIdOrNull()
-        val item = restaurants.firstOrNull { it.id == restaurantId }?.itens?.firstOrNull { it.id == menuItemId }
+        val restaurant = state.value.restaurants.firstOrNull { it.id == restaurantId }
+        val item = restaurant?.itens?.firstOrNull { it.id == menuItemId }
         MenuItemFormRoute(
             initialDraft = item?.toDraft() ?: MenuItemDraft(),
             onSubmit = { draft ->
                 if (restaurantId != null && menuItemId != null) {
-                    actions.onSaveMenuItem(restaurantId, menuItemId, draft)
+                    actions.value.onSaveMenuItem(restaurantId, menuItemId, draft)
                 }
             },
             onBack = { navController.popBackStack() },

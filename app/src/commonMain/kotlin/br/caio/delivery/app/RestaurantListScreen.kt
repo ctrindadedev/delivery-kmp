@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -35,21 +34,11 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RestaurantListScreen(
-    restaurants: List<Restaurant>,
+    visibleRestaurants: List<Restaurant>,
     query: String,
     actions: RestaurantListActions,
     modifier: Modifier = Modifier,
 ) {
-    val visibleRestaurants =
-        remember(restaurants, query) {
-            val normalizedQuery = query.trim()
-            if (normalizedQuery.isEmpty()) {
-                restaurants
-            } else {
-                restaurants.filter { it.nome.contains(normalizedQuery, ignoreCase = true) }
-            }
-        }
-
     Column(
         modifier =
             modifier
@@ -205,7 +194,7 @@ private fun EmptyRestaurantList(
 private fun RestaurantListPreview() {
     DeliveryTheme(darkTheme = false) {
         RestaurantListScreen(
-            restaurants = sampleRestaurants,
+            visibleRestaurants = sampleRestaurants,
             query = "",
             actions = RestaurantListActions({}, {}, {}),
         )
@@ -217,7 +206,7 @@ private fun RestaurantListPreview() {
 private fun EmptyRestaurantListPreview() {
     DeliveryTheme(darkTheme = true) {
         RestaurantListScreen(
-            restaurants = sampleRestaurants,
+            visibleRestaurants = emptyList(),
             query = "inexistente",
             actions = RestaurantListActions({}, {}, {}),
         )

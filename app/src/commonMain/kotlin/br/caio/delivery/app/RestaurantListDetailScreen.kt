@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RestaurantListDetailScreen(
-    state: DeliveryUiState,
+    state: RestaurantListUiState,
     actions: DeliveryActions,
     navigationActions: WideNavigationActions,
 ) {
@@ -26,7 +26,7 @@ fun RestaurantListDetailScreen(
 
     Row(modifier = Modifier.fillMaxSize()) {
         RestaurantListScreen(
-            restaurants = state.restaurants,
+            visibleRestaurants = state.visibleRestaurants,
             query = state.query,
             actions =
                 RestaurantListActions(

@@ -1,6 +1,9 @@
 package br.caio.delivery.app
 
 import androidx.lifecycle.ViewModel
+import br.caio.delivery.dominio.Dinheiro
+import br.caio.delivery.dominio.MenuItem
+import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +28,6 @@ data class RestaurantListUiState(
         }
 }
 
-/** Centraliza estado e eventos da lista. A integração com Compose é o próximo commit. */
 class RestaurantListViewModel(
     initialRestaurants: List<Restaurant> = emptyList(),
 ) : ViewModel() {
@@ -45,4 +47,64 @@ class RestaurantListViewModel(
     fun updateRestaurants(restaurants: List<Restaurant>) {
         _uiState.update { current -> current.copy(restaurants = restaurants.toList()) }
     }
+
+    fun saveRestaurant(
+        restaurantId: RestaurantId?,
+        name: String,
+    ) {
+        _uiState.update { current ->
+            current.copy(restaurants = current.restaurants.saveRestaurant(restaurantId, name))
+        }
+    }
+
+    fun saveMenuItem(
+        restaurantId: RestaurantId,
+        menuItemId: MenuItemId?,
+        draft: MenuItemDraft,
+    ) {
+        val priceInCents = parsePriceInCents(draft.price) ?: return
+        _uiState.update { current ->
+            current.copy(restaurants = current.restaurants.saveMenuItem(restaurantId, menuItemId, draft, priceInCents))
+        }
+    }
 }
+
+private fun List<Restaurant>.saveRestaurant(
+    restaurantId: RestaurantId?,
+    name: String,
+): List<Restaurant> =
+    if (restaurantId == null) {
+        this + Restaurant(id = RestaurantId.novo(), nome = name)
+    } else {
+        map { restaurant ->
+            if (restaurant.id == restaurantId) restaurant.copy(nome = name) else restaurant
+        }
+    }
+
+private fun List<Restaurant>.saveMenuItem(
+    restaurantId: RestaurantId,
+    menuItemId: MenuItemId?,
+    draft: MenuItemDraft,
+    priceInCents: Long,
+): List<Restaurant> =
+    map { restaurant ->
+        if (restaurant.id != restaurantId) {
+            restaurant
+        } else {
+            val item =
+                MenuItem(
+                    id = menuItemId ?: MenuItemId.novo(),
+                    nome = draft.name.trim(),
+                    descricao = draft.description.trim(),
+                    preco = Dinheiro(priceInCents),
+                    disponivel = draft.available,
+                )
+            val items =
+                if (menuItemId == null) {
+                    restaurant.itens + item
+                } else {
+                    restaurant.itens.map { current -> if (current.id == menuItemId) item else current }
+                }
+            restaurant.copy(itens = items)
+        }
+    }
