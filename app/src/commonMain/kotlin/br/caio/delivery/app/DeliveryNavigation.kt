@@ -3,11 +3,11 @@ package br.caio.delivery.app
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -193,26 +193,19 @@ private fun RestaurantFormRoute(
     submitAvailable: Boolean = true,
     editing: Boolean = false,
 ) {
-    var name by rememberSaveable { mutableStateOf(initialName) }
-    var nameTouched by rememberSaveable { mutableStateOf(false) }
-    val validation = validateRestaurantForm(name)
+    val formViewModel =
+        viewModel { RestaurantFormViewModel(createSavedStateHandle(), initialName, submitAvailable, editing) }
+    val state by formViewModel.uiState.collectAsStateWithLifecycle()
     RestaurantFormScreen(
-        state =
-            RestaurantFormState(
-                name = name,
-                nameError = validation.nameError.takeIf { nameTouched },
-                submitEnabled = submitAvailable && validation.isValid,
-                editing = editing,
-            ),
+        state = state,
         actions =
             RestaurantFormActions(
-                onNameChange = {
-                    name = it
-                    nameTouched = true
-                },
+                onNameChange = formViewModel::updateName,
                 onSubmit = {
-                    onSubmit(name.trim())
-                    onBack()
+                    formViewModel.nameToSave()?.let {
+                        onSubmit(it)
+                        onBack()
+                    }
                 },
                 onBack = onBack,
             ),
@@ -260,43 +253,22 @@ private fun MenuItemFormRoute(
     initialDraft: MenuItemDraft = MenuItemDraft(),
     editing: Boolean = false,
 ) {
-    var name by rememberSaveable { mutableStateOf(initialDraft.name) }
-    var description by rememberSaveable { mutableStateOf(initialDraft.description) }
-    var price by rememberSaveable { mutableStateOf(initialDraft.price) }
-    var available by rememberSaveable { mutableStateOf(initialDraft.available) }
-    var nameTouched by rememberSaveable { mutableStateOf(false) }
-    var descriptionTouched by rememberSaveable { mutableStateOf(false) }
-    var priceTouched by rememberSaveable { mutableStateOf(false) }
-    val draft = MenuItemDraft(name, description, price, available)
-    val validation = validateMenuItemForm(draft)
+    val formViewModel =
+        viewModel { MenuItemFormViewModel(createSavedStateHandle(), initialDraft, submitAvailable, editing) }
+    val state by formViewModel.uiState.collectAsStateWithLifecycle()
     MenuItemFormScreen(
-        state =
-            MenuItemFormState(
-                draft = draft,
-                nameError = validation.nameError.takeIf { nameTouched },
-                descriptionError = validation.descriptionError.takeIf { descriptionTouched },
-                priceError = validation.priceError.takeIf { priceTouched },
-                submitEnabled = submitAvailable && validation.isValid,
-                editing = editing,
-            ),
+        state = state,
         actions =
             MenuItemFormActions(
-                onNameChange = {
-                    name = it
-                    nameTouched = true
-                },
-                onDescriptionChange = {
-                    description = it
-                    descriptionTouched = true
-                },
-                onPriceChange = {
-                    price = it
-                    priceTouched = true
-                },
-                onAvailableChange = { available = it },
+                onNameChange = formViewModel::updateName,
+                onDescriptionChange = formViewModel::updateDescription,
+                onPriceChange = formViewModel::updatePrice,
+                onAvailableChange = formViewModel::updateAvailability,
                 onSubmit = {
-                    onSubmit(draft)
-                    onBack()
+                    formViewModel.draftToSave()?.let {
+                        onSubmit(it)
+                        onBack()
+                    }
                 },
                 onBack = onBack,
             ),
