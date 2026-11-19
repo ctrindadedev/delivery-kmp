@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import kotlin.test.Test

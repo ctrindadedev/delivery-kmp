@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import br.caio.delivery.app.sampleRestaurants
 import br.caio.delivery.app.theme.DeliveryTheme
 import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant

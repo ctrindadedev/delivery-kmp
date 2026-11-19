@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 data class MenuItemDraft(
     val name: String = "",

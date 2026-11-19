@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import br.caio.delivery.dominio.DESCRICAO_TAMANHO_MAXIMO
 import br.caio.delivery.dominio.NOME_TAMANHO_MAXIMO

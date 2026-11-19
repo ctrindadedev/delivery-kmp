@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import br.caio.delivery.app.data.InMemoryRestaurantRepository
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 import kotlin.test.Test
@@ -22,7 +23,7 @@ class RestaurantListFlowTest {
     fun restaurantSavedInViewModelAppearsInFilteredList() =
         runComposeUiTest {
             val pizzaria = Restaurant(id = RestaurantId.novo(), nome = "Pizzaria")
-            val viewModel = RestaurantListViewModel(listOf(pizzaria))
+            val viewModel = RestaurantListViewModel(InMemoryRestaurantRepository(listOf(pizzaria)))
             setContent {
                 val owner = remember { TestLifecycleOwner() }
                 CompositionLocalProvider(LocalLifecycleOwner provides owner) {

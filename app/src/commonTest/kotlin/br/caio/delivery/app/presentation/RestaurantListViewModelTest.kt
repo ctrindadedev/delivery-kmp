@@ -1,5 +1,6 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
+import br.caio.delivery.app.data.InMemoryRestaurantRepository
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 import kotlin.test.Test
@@ -9,7 +10,7 @@ class RestaurantListViewModelTest {
     @Test
     fun initialStateContainsRestaurantsAndEmptyQuery() {
         val restaurant = Restaurant(id = RestaurantId.novo(), nome = "Sabor da Casa")
-        val viewModel = RestaurantListViewModel(listOf(restaurant))
+        val viewModel = RestaurantListViewModel(InMemoryRestaurantRepository(listOf(restaurant)))
 
         assertEquals("", viewModel.uiState.value.query)
         assertEquals(listOf(restaurant), viewModel.uiState.value.visibleRestaurants)
@@ -19,7 +20,7 @@ class RestaurantListViewModelTest {
     fun searchIsCaseInsensitiveAndIgnoresSurroundingSpaces() {
         val sushi = Restaurant(id = RestaurantId.novo(), nome = "Sushi Natal")
         val pizza = Restaurant(id = RestaurantId.novo(), nome = "Pizzaria")
-        val viewModel = RestaurantListViewModel(listOf(sushi, pizza))
+        val viewModel = RestaurantListViewModel(InMemoryRestaurantRepository(listOf(sushi, pizza)))
 
         viewModel.updateQuery("   sUsHi  ")
 
@@ -30,21 +31,22 @@ class RestaurantListViewModelTest {
     @Test
     fun updatingRestaurantsKeepsQueryAndSelection() {
         val original = Restaurant(id = RestaurantId.novo(), nome = "Sushi Original")
-        val newRestaurant = Restaurant(id = RestaurantId.novo(), nome = "Sushi Novo")
-        val viewModel = RestaurantListViewModel(listOf(original))
+        val viewModel = RestaurantListViewModel(InMemoryRestaurantRepository(listOf(original)))
 
         viewModel.updateQuery("sushi")
         viewModel.selectRestaurant(original.id)
-        viewModel.updateRestaurants(listOf(original, newRestaurant))
+        viewModel.saveRestaurant(null, "Sushi Novo")
 
         assertEquals(original.id, viewModel.uiState.value.selectedRestaurantId)
-        assertEquals(listOf(original, newRestaurant), viewModel.uiState.value.visibleRestaurants)
+        val visible = viewModel.uiState.value.visibleRestaurants
+        val names = visible.map { it.nome }
+        assertEquals(listOf(original.nome, "Sushi Novo"), names)
     }
 
     @Test
     fun emptyQueryRestoresAllRestaurants() {
         val restaurant = Restaurant(id = RestaurantId.novo(), nome = "Bistrô")
-        val viewModel = RestaurantListViewModel(listOf(restaurant))
+        val viewModel = RestaurantListViewModel(InMemoryRestaurantRepository(listOf(restaurant)))
 
         viewModel.updateQuery("não existe")
         assertEquals(emptyList(), viewModel.uiState.value.visibleRestaurants)

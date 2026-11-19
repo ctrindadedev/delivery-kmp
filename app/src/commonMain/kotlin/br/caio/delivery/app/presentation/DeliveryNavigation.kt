@@ -1,4 +1,4 @@
-package br.caio.delivery.app
+package br.caio.delivery.app.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
