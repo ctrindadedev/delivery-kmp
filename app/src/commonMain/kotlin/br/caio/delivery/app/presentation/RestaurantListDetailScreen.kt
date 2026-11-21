@@ -26,11 +26,11 @@ fun RestaurantListDetailScreen(
 
     Row(modifier = Modifier.fillMaxSize()) {
         RestaurantListScreen(
-            visibleRestaurants = state.visibleRestaurants,
-            query = state.query,
+            state = state,
             actions =
                 RestaurantListActions(
                     onQueryChange = actions.onQueryChange,
+                    onRetry = actions.onRetry,
                     onRestaurantClick = actions.onRestaurantSelected,
                     onCreateRestaurant = navigationActions.onCreateRestaurant,
                 ),

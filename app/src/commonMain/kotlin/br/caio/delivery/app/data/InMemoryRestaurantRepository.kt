@@ -12,7 +12,7 @@ internal class InMemoryRestaurantRepository(
 ) : RestaurantRepository {
     private var restaurants = initialRestaurants.toList()
 
-    override fun listRestaurants(): List<Restaurant> = restaurants
+    override suspend fun listRestaurants(): List<Restaurant> = restaurants
 
     override fun saveRestaurant(
         restaurantId: RestaurantId?,

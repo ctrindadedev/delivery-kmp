@@ -48,6 +48,7 @@ data class MenuItemEditRoute(
 
 data class DeliveryActions(
     val onQueryChange: (String) -> Unit,
+    val onRetry: () -> Unit,
     val onRestaurantSelected: (RestaurantId) -> Unit,
     val onSaveRestaurant: (RestaurantId?, String) -> Unit,
     val onSaveMenuItem: (RestaurantId, MenuItemId?, MenuItemDraft) -> Unit,
@@ -113,11 +114,11 @@ private fun NavGraphBuilder.restaurantListDestination(
             )
         } else {
             RestaurantListScreen(
-                visibleRestaurants = uiState.visibleRestaurants,
-                query = uiState.query,
+                state = uiState,
                 actions =
                     RestaurantListActions(
                         onQueryChange = actions.onQueryChange,
+                        onRetry = actions.onRetry,
                         onRestaurantClick = { restaurantId ->
                             navController.navigate(RestaurantDetailRoute(restaurantId.asRouteValue()))
                         },

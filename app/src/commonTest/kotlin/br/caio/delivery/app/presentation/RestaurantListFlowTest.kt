@@ -33,6 +33,7 @@ class RestaurantListFlowTest {
                 }
             }
 
+            waitUntil(timeoutMillis = 5_000) { viewModel.uiState.value.status == RestaurantListStatus.Success }
             onNodeWithText("Buscar restaurante").performTextInput("bistrô")
             onNodeWithText("Nenhum restaurante encontrado").assertIsDisplayed()
             runOnIdle { viewModel.saveRestaurant(null, "Bistrô do Porto") }

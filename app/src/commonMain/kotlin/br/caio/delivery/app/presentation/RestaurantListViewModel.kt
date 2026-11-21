@@ -1,22 +1,36 @@
 package br.caio.delivery.app.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import br.caio.delivery.app.domain.MenuItemInput
 import br.caio.delivery.app.domain.RestaurantRepository
 import br.caio.delivery.dominio.Dinheiro
 import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-/** Estado da lista, independente de Compose e da forma de obter os restaurantes. */
+sealed interface RestaurantListStatus {
+    data object Loading : RestaurantListStatus
+
+    data object Empty : RestaurantListStatus
+
+    data object Success : RestaurantListStatus
+
+    data object Error : RestaurantListStatus
+}
+
 data class RestaurantListUiState(
     val restaurants: List<Restaurant> = emptyList(),
     val query: String = "",
     val selectedRestaurantId: RestaurantId? = null,
+    val status: RestaurantListStatus = RestaurantListStatus.Loading,
 ) {
     val visibleRestaurants: List<Restaurant>
         get() {
@@ -32,10 +46,30 @@ data class RestaurantListUiState(
 class RestaurantListViewModel(
     private val repository: RestaurantRepository,
 ) : ViewModel() {
-    private val _uiState =
-        MutableStateFlow(RestaurantListUiState(restaurants = repository.listRestaurants()))
+    private val _uiState = MutableStateFlow(RestaurantListUiState())
+    private var loadJob: Job? = null
 
     val uiState: StateFlow<RestaurantListUiState> = _uiState.asStateFlow()
+
+    init {
+        reload()
+    }
+
+    fun reload() {
+        if (loadJob?.isActive == true) return
+
+        loadJob =
+            viewModelScope.launch {
+                _uiState.update { it.copy(status = RestaurantListStatus.Loading) }
+                try {
+                    updateCatalog(repository.listRestaurants())
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    _uiState.update { it.copy(status = RestaurantListStatus.Error) }
+                }
+            }
+    }
 
     fun updateQuery(query: String) {
         _uiState.update { current -> current.copy(query = query) }
@@ -50,7 +84,7 @@ class RestaurantListViewModel(
         name: String,
     ) {
         val restaurants = repository.saveRestaurant(restaurantId, name)
-        _uiState.update { it.copy(restaurants = restaurants) }
+        updateCatalog(restaurants)
     }
 
     fun saveMenuItem(
@@ -67,6 +101,11 @@ class RestaurantListViewModel(
                 available = draft.available,
             )
         val restaurants = repository.saveMenuItem(restaurantId, menuItemId, item)
-        _uiState.update { it.copy(restaurants = restaurants) }
+        updateCatalog(restaurants)
+    }
+
+    private fun updateCatalog(restaurants: List<Restaurant>) {
+        val status = if (restaurants.isEmpty()) RestaurantListStatus.Empty else RestaurantListStatus.Success
+        _uiState.update { it.copy(restaurants = restaurants, status = status) }
     }
 }

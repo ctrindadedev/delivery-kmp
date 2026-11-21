@@ -6,7 +6,7 @@ import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
 
 interface RestaurantRepository {
-    fun listRestaurants(): List<Restaurant>
+    suspend fun listRestaurants(): List<Restaurant>
 
     fun saveRestaurant(
         restaurantId: RestaurantId?,

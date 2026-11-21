@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -35,8 +37,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RestaurantListScreen(
-    visibleRestaurants: List<Restaurant>,
-    query: String,
+    state: RestaurantListUiState,
     actions: RestaurantListActions,
     modifier: Modifier = Modifier,
 ) {
@@ -49,8 +50,7 @@ fun RestaurantListScreen(
     ) {
         Column(modifier = Modifier.fillMaxWidth().widthIn(max = 840.dp)) {
             RestaurantListContent(
-                visibleRestaurants = visibleRestaurants,
-                query = query,
+                state = state,
                 actions = actions,
             )
         }
@@ -59,8 +59,7 @@ fun RestaurantListScreen(
 
 @Composable
 private fun ColumnScope.RestaurantListContent(
-    visibleRestaurants: List<Restaurant>,
-    query: String,
+    state: RestaurantListUiState,
     actions: RestaurantListActions,
 ) {
     Text(
@@ -77,8 +76,30 @@ private fun ColumnScope.RestaurantListContent(
 
     Spacer(Modifier.height(20.dp))
 
+    when (state.status) {
+        RestaurantListStatus.Loading -> {
+            CircularProgressIndicator(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .semantics { contentDescription = "Carregando restaurantes" },
+            )
+        }
+        RestaurantListStatus.Error -> {
+            Text("Não foi possível carregar os restaurantes.")
+            Button(onClick = actions.onRetry) { Text("Tentar novamente") }
+        }
+        RestaurantListStatus.Empty, RestaurantListStatus.Success -> RestaurantCatalog(state, actions)
+    }
+}
+
+@Composable
+private fun ColumnScope.RestaurantCatalog(
+    state: RestaurantListUiState,
+    actions: RestaurantListActions,
+) {
     CampoTexto(
-        value = query,
+        value = state.query,
         onValueChange = actions.onQueryChange,
         label = "Buscar restaurante",
     )
@@ -94,8 +115,9 @@ private fun ColumnScope.RestaurantListContent(
 
     Spacer(Modifier.height(20.dp))
 
+    val visibleRestaurants = state.visibleRestaurants
     if (visibleRestaurants.isEmpty()) {
-        EmptyRestaurantList(query = query)
+        EmptyRestaurantList(query = state.query)
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -182,7 +204,12 @@ private fun EmptyRestaurantList(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Não encontramos resultados para “$query”.",
+                text =
+                    if (query.isBlank()) {
+                        "Cadastre um restaurante para começar."
+                    } else {
+                        "Não encontramos resultados para “$query”."
+                    },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -195,9 +222,8 @@ private fun EmptyRestaurantList(
 private fun RestaurantListPreview() {
     DeliveryTheme(darkTheme = false) {
         RestaurantListScreen(
-            visibleRestaurants = sampleRestaurants,
-            query = "",
-            actions = RestaurantListActions({}, {}, {}),
+            state = RestaurantListUiState(restaurants = sampleRestaurants, status = RestaurantListStatus.Success),
+            actions = RestaurantListActions({}, {}, {}, {}),
         )
     }
 }
@@ -207,9 +233,8 @@ private fun RestaurantListPreview() {
 private fun EmptyRestaurantListPreview() {
     DeliveryTheme(darkTheme = true) {
         RestaurantListScreen(
-            visibleRestaurants = emptyList(),
-            query = "inexistente",
-            actions = RestaurantListActions({}, {}, {}),
+            state = RestaurantListUiState(status = RestaurantListStatus.Empty),
+            actions = RestaurantListActions({}, {}, {}, {}),
         )
     }
 }

@@ -41,6 +41,7 @@ fun Conteudo(
         actions =
             DeliveryActions(
                 onQueryChange = listViewModel::updateQuery,
+                onRetry = listViewModel::reload,
                 onRestaurantSelected = listViewModel::selectRestaurant,
                 onSaveRestaurant = listViewModel::saveRestaurant,
                 onSaveMenuItem = listViewModel::saveMenuItem,
