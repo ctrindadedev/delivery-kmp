@@ -50,8 +50,8 @@ data class DeliveryActions(
     val onQueryChange: (String) -> Unit,
     val onRetry: () -> Unit,
     val onRestaurantSelected: (RestaurantId) -> Unit,
-    val onSaveRestaurant: (RestaurantId?, String) -> Unit,
-    val onSaveMenuItem: (RestaurantId, MenuItemId?, MenuItemDraft) -> Unit,
+    val onSaveRestaurant: suspend (RestaurantId?, String) -> Unit,
+    val onSaveMenuItem: suspend (RestaurantId, MenuItemId?, MenuItemDraft) -> Unit,
 )
 
 data class WideNavigationActions(
@@ -188,7 +188,7 @@ private fun NavGraphBuilder.restaurantFormDestinations(
 
 @Composable
 private fun RestaurantFormRoute(
-    onSubmit: (String) -> Unit,
+    onSubmit: suspend (String) -> Unit,
     onBack: () -> Unit,
     initialName: String = "",
     submitAvailable: Boolean = true,
@@ -197,15 +197,15 @@ private fun RestaurantFormRoute(
     val formViewModel =
         viewModel { RestaurantFormViewModel(createSavedStateHandle(), initialName, submitAvailable, editing) }
     val state by formViewModel.uiState.collectAsStateWithLifecycle()
+    val submission = rememberFormSubmission()
     RestaurantFormScreen(
-        state = state,
+        state = state.copy(submitEnabled = state.submitEnabled && !submission.saving, submitError = submission.error),
         actions =
             RestaurantFormActions(
                 onNameChange = formViewModel::updateName,
                 onSubmit = {
                     formViewModel.nameToSave()?.let {
-                        onSubmit(it)
-                        onBack()
+                        submission.save(onBack) { onSubmit(it) }
                     }
                 },
                 onBack = onBack,
@@ -248,7 +248,7 @@ private fun NavGraphBuilder.menuItemFormDestinations(
 
 @Composable
 private fun MenuItemFormRoute(
-    onSubmit: (MenuItemDraft) -> Unit,
+    onSubmit: suspend (MenuItemDraft) -> Unit,
     onBack: () -> Unit,
     submitAvailable: Boolean,
     initialDraft: MenuItemDraft = MenuItemDraft(),
@@ -257,8 +257,9 @@ private fun MenuItemFormRoute(
     val formViewModel =
         viewModel { MenuItemFormViewModel(createSavedStateHandle(), initialDraft, submitAvailable, editing) }
     val state by formViewModel.uiState.collectAsStateWithLifecycle()
+    val submission = rememberFormSubmission()
     MenuItemFormScreen(
-        state = state,
+        state = state.copy(submitEnabled = state.submitEnabled && !submission.saving, submitError = submission.error),
         actions =
             MenuItemFormActions(
                 onNameChange = formViewModel::updateName,
@@ -267,8 +268,7 @@ private fun MenuItemFormRoute(
                 onAvailableChange = formViewModel::updateAvailability,
                 onSubmit = {
                     formViewModel.draftToSave()?.let {
-                        onSubmit(it)
-                        onBack()
+                        submission.save(onBack) { onSubmit(it) }
                     }
                 },
                 onBack = onBack,

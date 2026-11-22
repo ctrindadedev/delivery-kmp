@@ -44,6 +44,9 @@ kotlin {
             implementation(libs.material3.window.size)
             implementation(libs.material3.adaptive)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.json)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.lifecycle.runtime.compose)
         }
@@ -51,18 +54,21 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
         }
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp)
         }
 
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.cio)
             }
         }
 
@@ -74,7 +80,12 @@ kotlin {
     }
 }
 
+val deliveryApiUrl = providers.gradleProperty("deliveryApiUrl").orElse("http://10.0.2.2:8080")
+
 android {
+    buildFeatures {
+        buildConfig = true
+    }
     namespace = "br.caio.delivery.app"
     compileSdk = 34
 
@@ -84,6 +95,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "DELIVERY_API_URL", "\"${deliveryApiUrl.get()}\"")
     }
 
     compileOptions {

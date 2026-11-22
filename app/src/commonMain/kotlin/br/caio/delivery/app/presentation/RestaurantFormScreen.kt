@@ -34,6 +34,7 @@ data class RestaurantFormState(
     val nameError: String? = null,
     val submitEnabled: Boolean = true,
     val editing: Boolean = false,
+    val submitError: String? = null,
 )
 
 data class RestaurantFormActions(
@@ -87,6 +88,8 @@ fun RestaurantFormScreen(
             )
 
             Spacer(Modifier.height(24.dp))
+
+            state.submitError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

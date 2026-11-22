@@ -12,9 +12,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewModelScope
 import br.caio.delivery.app.data.InMemoryRestaurantRepository
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
+import kotlinx.coroutines.launch
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -36,7 +38,13 @@ class RestaurantListFlowTest {
             waitUntil(timeoutMillis = 5_000) { viewModel.uiState.value.status == RestaurantListStatus.Success }
             onNodeWithText("Buscar restaurante").performTextInput("bistrô")
             onNodeWithText("Nenhum restaurante encontrado").assertIsDisplayed()
-            runOnIdle { viewModel.saveRestaurant(null, "Bistrô do Porto") }
+            runOnIdle {
+                viewModel.viewModelScope.launch { viewModel.saveRestaurant(null, "Bistrô do Porto") }
+            }
+            waitUntil(timeoutMillis = 5_000) {
+                val state = viewModel.uiState.value
+                state.visibleRestaurants.isNotEmpty()
+            }
             onNodeWithText("Bistrô do Porto").assertIsDisplayed()
         }
 }

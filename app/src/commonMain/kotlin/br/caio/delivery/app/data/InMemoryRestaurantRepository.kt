@@ -14,59 +14,35 @@ internal class InMemoryRestaurantRepository(
 
     override suspend fun listRestaurants(): List<Restaurant> = restaurants
 
-    override fun saveRestaurant(
+    override suspend fun saveRestaurant(
         restaurantId: RestaurantId?,
         name: String,
-    ): List<Restaurant> {
-        restaurants = restaurants.saveRestaurant(restaurantId, name)
-        return restaurants
+    ): Restaurant {
+        val current = restaurantId?.let { id -> restaurants.first { it.id == id } }
+        val saved = current?.copy(nome = name) ?: Restaurant(id = RestaurantId.novo(), nome = name)
+        restaurants =
+            if (current == null) {
+                restaurants + saved
+            } else {
+                restaurants.map { if (it.id == saved.id) saved else it }
+            }
+        return saved
     }
 
-    override fun saveMenuItem(
+    override suspend fun saveMenuItem(
         restaurantId: RestaurantId,
         menuItemId: MenuItemId?,
         item: MenuItemInput,
-    ): List<Restaurant> {
-        restaurants = restaurants.saveMenuItem(restaurantId, menuItemId, item)
-        return restaurants
+    ): MenuItem {
+        val current = restaurants.first { it.id == restaurantId }
+        val saved = MenuItem(menuItemId ?: MenuItemId.novo(), item.name, item.description, item.price, item.available)
+        val updatedItems =
+            if (menuItemId == null) {
+                current.itens + saved
+            } else {
+                current.itens.map { if (it.id == menuItemId) saved else it }
+            }
+        restaurants = restaurants.map { if (it.id == restaurantId) current.copy(itens = updatedItems) else it }
+        return saved
     }
 }
-
-private fun List<Restaurant>.saveRestaurant(
-    restaurantId: RestaurantId?,
-    name: String,
-): List<Restaurant> =
-    if (restaurantId == null) {
-        this + Restaurant(id = RestaurantId.novo(), nome = name)
-    } else {
-        map { restaurant ->
-            if (restaurant.id == restaurantId) restaurant.copy(nome = name) else restaurant
-        }
-    }
-
-private fun List<Restaurant>.saveMenuItem(
-    restaurantId: RestaurantId,
-    menuItemId: MenuItemId?,
-    input: MenuItemInput,
-): List<Restaurant> =
-    map { restaurant ->
-        if (restaurant.id != restaurantId) {
-            restaurant
-        } else {
-            val item =
-                MenuItem(
-                    id = menuItemId ?: MenuItemId.novo(),
-                    nome = input.name,
-                    descricao = input.description,
-                    preco = input.price,
-                    disponivel = input.available,
-                )
-            val items =
-                if (menuItemId == null) {
-                    restaurant.itens + item
-                } else {
-                    restaurant.itens.map { current -> if (current.id == menuItemId) item else current }
-                }
-            restaurant.copy(itens = items)
-        }
-    }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import br.caio.delivery.app.domain.MenuItemInput
 import br.caio.delivery.app.domain.RestaurantRepository
 import br.caio.delivery.dominio.Dinheiro
+import br.caio.delivery.dominio.MenuItem
 import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
@@ -79,15 +80,23 @@ class RestaurantListViewModel(
         _uiState.update { current -> current.copy(selectedRestaurantId = restaurantId) }
     }
 
-    fun saveRestaurant(
+    suspend fun saveRestaurant(
         restaurantId: RestaurantId?,
         name: String,
     ) {
-        val restaurants = repository.saveRestaurant(restaurantId, name)
-        updateCatalog(restaurants)
+        val saved = repository.saveRestaurant(restaurantId, name)
+        _uiState.update { current ->
+            val restaurants =
+                if (restaurantId == null) {
+                    current.restaurants + saved
+                } else {
+                    current.restaurants.map { if (it.id == restaurantId) saved.copy(itens = it.itens) else it }
+                }
+            current.copy(restaurants = restaurants, status = RestaurantListStatus.Success)
+        }
     }
 
-    fun saveMenuItem(
+    suspend fun saveMenuItem(
         restaurantId: RestaurantId,
         menuItemId: MenuItemId?,
         draft: MenuItemDraft,
@@ -100,8 +109,19 @@ class RestaurantListViewModel(
                 price = Dinheiro(priceInCents),
                 available = draft.available,
             )
-        val restaurants = repository.saveMenuItem(restaurantId, menuItemId, item)
-        updateCatalog(restaurants)
+        val saved = repository.saveMenuItem(restaurantId, menuItemId, item)
+        _uiState.update { current ->
+            current.copy(
+                restaurants =
+                    current.restaurants.map { restaurant ->
+                        if (restaurant.id == restaurantId) {
+                            restaurant.copy(itens = restaurant.itens.withSavedItem(saved))
+                        } else {
+                            restaurant
+                        }
+                    },
+            )
+        }
     }
 
     private fun updateCatalog(restaurants: List<Restaurant>) {
@@ -109,3 +129,6 @@ class RestaurantListViewModel(
         _uiState.update { it.copy(restaurants = restaurants, status = status) }
     }
 }
+
+private fun List<MenuItem>.withSavedItem(saved: MenuItem): List<MenuItem> =
+    if (any { it.id == saved.id }) map { if (it.id == saved.id) saved else it } else this + saved

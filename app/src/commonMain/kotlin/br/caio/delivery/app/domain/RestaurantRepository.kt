@@ -1,6 +1,7 @@
 package br.caio.delivery.app.domain
 
 import br.caio.delivery.dominio.Dinheiro
+import br.caio.delivery.dominio.MenuItem
 import br.caio.delivery.dominio.MenuItemId
 import br.caio.delivery.dominio.Restaurant
 import br.caio.delivery.dominio.RestaurantId
@@ -8,16 +9,16 @@ import br.caio.delivery.dominio.RestaurantId
 interface RestaurantRepository {
     suspend fun listRestaurants(): List<Restaurant>
 
-    fun saveRestaurant(
+    suspend fun saveRestaurant(
         restaurantId: RestaurantId?,
         name: String,
-    ): List<Restaurant>
+    ): Restaurant
 
-    fun saveMenuItem(
+    suspend fun saveMenuItem(
         restaurantId: RestaurantId,
         menuItemId: MenuItemId?,
         item: MenuItemInput,
-    ): List<Restaurant>
+    ): MenuItem
 }
 
 data class MenuItemInput(

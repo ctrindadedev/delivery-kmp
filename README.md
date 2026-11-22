@@ -90,6 +90,25 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 java --version
 ```
 
+## Conectar o aplicativo à API
+
+Antes de abrir o app, suba a API e o PostgreSQL conforme a seção de execução
+da API. O app carrega os restaurantes e cardápios do banco. Se o banco estiver
+vazio, cadastre o primeiro restaurante pelo app ou pela Swagger UI.
+
+- Desktop: usa `http://localhost:8080`. Defina a variável de ambiente
+  `DELIVERY_API_URL` para usar outro endereço.
+- Emulador Android: usa `http://10.0.2.2:8080` para acessar a máquina host.
+  Para escolher outro endereço, passe a propriedade Gradle `deliveryApiUrl`
+  ao compilar ou instalar. Builds de produção devem usar HTTPS.
+
+Exemplo com um dispositivo Android conectado por USB:
+
+```powershell
+adb reverse tcp:8080 tcp:8080
+.\gradlew.bat :app:installDebug "-PdeliveryApiUrl=http://127.0.0.1:8080"
+```
+
 ## Executar o aplicativo no desktop
 
 Na raiz do repositório:
@@ -119,10 +138,10 @@ depuração pelo PowerShell:
 .\gradlew.bat :app:installDebug
 ```
 
-Para abrir diretamente o primeiro restaurante pelo deep link:
+Para abrir um restaurante pelo deep link, substitua `<id>` pelo UUID que a API retorna:
 
 ```powershell
-adb shell am start -W -a android.intent.action.VIEW -d "delivery://restaurantes/00000000-0000-0000-0000-000000000001" br.caio.delivery
+adb shell am start -W -a android.intent.action.VIEW -d "delivery://restaurantes/<id>" br.caio.delivery
 ```
 
 ## Subir a API com o banco

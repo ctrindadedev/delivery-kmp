@@ -1,5 +1,6 @@
 package br.caio.delivery.app
 
+import br.caio.delivery.app.data.InMemoryRestaurantRepository
 import br.caio.delivery.app.presentation.MenuItemDraft
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
@@ -13,7 +14,7 @@ class DeliveryCompositionTest {
     @Test
     fun compositionCreatesViewModelWithIsolatedCatalogAndWorkingMenuWrites() =
         runViewModelTest {
-            val viewModel = createRestaurantListViewModel()
+            val viewModel = createListViewModel(InMemoryRestaurantRepository(sampleRestaurants))
             runCurrent()
             val initial = viewModel.uiState.value
             val restaurant = initial.restaurants.first()
@@ -26,7 +27,7 @@ class DeliveryCompositionTest {
             val item = assertNotNull(updated.itens.find { it.nome == draft.name })
             assertEquals(850L, item.preco.centavos)
 
-            val fresh = createRestaurantListViewModel()
+            val fresh = createListViewModel(InMemoryRestaurantRepository(sampleRestaurants))
             runCurrent()
             val freshState = fresh.uiState.value
             val freshRestaurant = freshState.restaurants.first()

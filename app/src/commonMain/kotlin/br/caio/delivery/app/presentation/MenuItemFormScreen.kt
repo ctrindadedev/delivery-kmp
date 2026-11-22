@@ -40,6 +40,7 @@ data class MenuItemFormState(
     val priceError: String? = null,
     val submitEnabled: Boolean = true,
     val editing: Boolean = false,
+    val submitError: String? = null,
 )
 
 data class MenuItemFormActions(
@@ -70,6 +71,8 @@ fun MenuItemFormScreen(
             Spacer(Modifier.height(24.dp))
             MenuItemFields(state = state, actions = actions)
             Spacer(Modifier.height(12.dp))
+            state.submitError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
             FormButtons(
                 editing = state.editing,
                 submitEnabled = state.submitEnabled,
