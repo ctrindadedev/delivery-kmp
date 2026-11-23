@@ -53,7 +53,7 @@ Nesta etapa, o repositório contém:
 - Compose Multiplatform 1.7.3
 - Android Gradle Plugin 8.7.3
 - Java 21
-- Go 1.23
+- Go 1.26
 - gRPC e Protocol Buffers
 - PostgreSQL, Flyway e Exposed
 
@@ -79,7 +79,7 @@ delivery-kmp/
 - JDK 21
 - Git
 - Android Studio com Android SDK 34 para executar o aplicativo Android
-- Go 1.23 para compilar o serviço de catálogo
+- Go 1.26 para compilar o serviço de catálogo
 - Docker para iniciar o PostgreSQL local
 
 No Windows, o Java 21 incluído no Android Studio pode ser ativado no PowerShell:
