@@ -17,10 +17,12 @@ import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
+private const val PORTA_PADRAO = 8080
+
 fun main() {
     embeddedServer(
         factory = Netty,
-        port = 8080,
+        port = System.getenv("PORT")?.toIntOrNull() ?: PORTA_PADRAO,
         host = "0.0.0.0",
         module = Application::module,
     ).start(wait = true)
