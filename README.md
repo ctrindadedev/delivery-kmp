@@ -69,7 +69,7 @@ delivery-kmp/
 ├── docs/                Proposta e decisões de arquitetura
 ├── config/              Configuração das verificações de qualidade
 ├── .github/workflows/   Pipeline de integração contínua
-├── docker-compose.yml   PostgreSQL para desenvolvimento local
+├── docker-compose.yml   API e PostgreSQL para desenvolvimento local
 ├── mise.toml            Versões das ferramentas e tarefas locais
 └── settings.gradle.kts  Módulos do projeto Gradle
 ```
@@ -127,15 +127,17 @@ adb shell am start -W -a android.intent.action.VIEW -d "delivery://restaurantes/
 
 ## Subir a API com o banco
 
-Com Docker e mise instalados, na raiz do repositório:
+Só é preciso ter Docker. Na raiz do repositório:
 
 ```sh
-mise run up
+cp .env.example .env
+docker compose up -d --build
 ```
 
-A tarefa empacota a API (`./gradlew :api:installDist`) e sobe a API e o PostgreSQL
-com `docker compose up -d --build`. A API só inicia depois que o banco está
-saudável e aplica as migrações do Flyway na subida. Com o ambiente ativo, acesse
+O `mise run up` faz o mesmo. A imagem da API é compilada dentro do Docker, em dois
+estágios, sem precisar de JDK na máquina. A API só inicia depois que o banco está
+saudável e aplica as migrações do Flyway na subida. `docker compose ps` mostra os
+dois serviços como `healthy`. Com o ambiente ativo, acesse
 `http://localhost:8080/health`. A resposta esperada é:
 
 ```json
@@ -143,13 +145,6 @@ saudável e aplica as migrações do Flyway na subida. Com o ambiente ativo, ace
 ```
 
 Para derrubar o ambiente mantendo os dados do banco, use `mise run down`.
-
-Sem o mise, os comandos equivalentes são:
-
-```powershell
-.\gradlew.bat :api:installDist
-docker compose up -d --build
-```
 
 ### Variáveis de ambiente
 
@@ -161,6 +156,7 @@ desenvolvimento do `docker-compose.yml`.
 | `DATABASE_URL` | URL JDBC do PostgreSQL | `jdbc:postgresql://localhost:5432/delivery` |
 | `DATABASE_USER` | Usuário do banco | `delivery` |
 | `DATABASE_PASSWORD` | Senha do banco | `delivery` |
+| `PORT` | Porta HTTP da API | `8080` |
 
 O `docker compose` aceita também:
 
