@@ -68,7 +68,7 @@ class ServicoDeItensTest {
 
     @Test
     fun `operacoes em restaurante ou item inexistente lancam nao encontrado`() =
-        runBlocking {
+        runBlocking<Unit> {
             val cantina = restaurantes.criar("Cantina")
             val inexistente = RestaurantId.novo()
 
