@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+// Contrato do cache de cardápios. A API Ktor é a fonte da verdade (cache-aside):
+// ela consulta o cache, guarda o cardápio lido do banco quando o cache não tem,
+// e invalida o cardápio a cada alteração. O serviço Go não tem banco.
+package delivery.catalogo.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/ctrindadedev/delivery-kmp/services/catalogo/gen/delivery/catalogo/v1;catalogov1";
+option java_multiple_files = true;
+option java_package = "br.caio.delivery.contratos.catalogo.v1";
+
+// Guarda em memória os cardápios mais lidos, com expiração e limite de tamanho.
+service CatalogoService {
+  // Devolve o cardápio guardado de um restaurante. Responde NOT_FOUND quando o
+  // cardápio não está no cache ou expirou (falta normal: quem chama lê do banco)
+  // e INVALID_ARGUMENT quando o identificador está vazio.
+  rpc ObterCardapio(ObterCardapioRequest) returns (ObterCardapioResponse);
+
+  // Guarda o cardápio completo de um restaurante, substituindo o anterior. Um
+  // cardápio sem itens é válido. Responde INVALID_ARGUMENT quando o identificador
+  // está vazio, algum item não tem identificador ou algum preço é negativo.
+  rpc GuardarCardapio(GuardarCardapioRequest) returns (GuardarCardapioResponse);
+
+  // Remove o cardápio de um restaurante do cache. Invalidar um cardápio que não
+  // está guardado não é erro. Responde INVALID_ARGUMENT quando o identificador
+  // está vazio.
+  rpc InvalidarCardapio(InvalidarCardapioRequest) returns (InvalidarCardapioResponse);
+}
+
+// O pedido de leitura de um cardápio.
+message ObterCardapioRequest {
+  // Identificador (UUID) do restaurante.
+  string restaurante_id = 1;
+}
+
+// O cardápio encontrado no cache.
+message ObterCardapioResponse {
+  // O cardápio guardado.
+  Cardapio cardapio = 1;
+}
+
+// O pedido para guardar um cardápio.
+message GuardarCardapioRequest {
+  // Identificador (UUID) do restaurante.
+  string restaurante_id = 1;
+  // Todos os itens do cardápio, na ordem em que a API os devolve.
+  repeated ItemDoCardapio itens = 2;
+}
+
+// A confirmação de que o cardápio foi guardado.
+message GuardarCardapioResponse {}
+
+// O pedido para remover um cardápio do cache.
+message InvalidarCardapioRequest {
+  // Identificador (UUID) do restaurante.
+  string restaurante_id = 1;
+}
+
+// O resultado da invalidação.
+message InvalidarCardapioResponse {
+  // Verdadeiro se havia um cardápio guardado para o restaurante.
+  bool removido = 1;
+}
+
+// O cardápio de um restaurante, como está no cache.
+message Cardapio {
+  // Identificador (UUID) do restaurante.
+  string restaurante_id = 1;
+  // Os itens do cardápio, na ordem em que foram guardados.
+  repeated ItemDoCardapio itens = 2;
+  // Momento em que o cardápio foi guardado; a expiração conta a partir daqui.
+  google.protobuf.Timestamp guardado_em = 3;
+}
+
+// Um item do cardápio.
+message ItemDoCardapio {
+  // Identificador (UUID) do item.
+  string id = 1;
+  // Nome exibido do item.
+  string nome = 2;
+  // Descrição do item; pode ser vazia.
+  string descricao = 3;
+  // Preço em centavos, nunca negativo.
+  int64 preco_centavos = 4;
+  // Verdadeiro se o item está disponível para pedido.
+  bool disponivel = 5;
+}

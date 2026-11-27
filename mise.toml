@@ -1,6 +1,7 @@
 [tools]
 java = "21"
-go = "1.23"
+go = "1.26"
+buf = "1.75.0"
 
 [tasks.build]
 description = "Builda os dois stacks: Kotlin/Gradle (shared, api) e Go (services/catalogo)"
@@ -37,4 +38,12 @@ cd services/catalogo && go test ./...
 run_windows = """
 gradlew.bat :shared:allTests :api:test :app:desktopTest --no-daemon
 cd services\\catalogo && go test ./...
+"""
+
+[tasks.proto]
+description = "Confere o contrato com buf lint e regera os stubs Go do serviço de catálogo"
+dir = "protos"
+run = """
+buf lint
+buf generate
 """
